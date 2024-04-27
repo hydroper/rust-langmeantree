@@ -31,7 +31,6 @@ struct Meaning {
 }
 
 struct MeaningField {
-    is_mut: bool,
     is_ref: bool,
     name: Ident,
     type_annotation: Type,
@@ -128,23 +127,11 @@ impl Parse for Meaning {
 
 fn parse_meaning_field(input: ParseStream) -> Result<MeaningField> {
     input.parse::<Token![let]>()?;
-    let mut is_ref = if input.peek(Token![ref]) {
+    let is_ref = if input.peek(Token![ref]) {
         input.parse::<Token![ref]>()?;
         true
     } else {
         false
-    };
-    let is_mut = if input.peek(Token![mut]) {
-        input.parse::<Token![mut]>()?;
-        true
-    } else {
-        false
-    };
-    is_ref = if input.peek(Token![ref]) {
-        input.parse::<Token![ref]>()?;
-        true
-    } else {
-        is_ref
     };
     let name = input.parse::<Ident>()?;
     input.parse::<Token![:]>()?;
@@ -154,7 +141,6 @@ fn parse_meaning_field(input: ParseStream) -> Result<MeaningField> {
     input.parse::<Token![;]>()?;
 
     Ok(MeaningField {
-        is_mut,
         is_ref,
         name,
         type_annotation,
@@ -174,7 +160,7 @@ fn parse_meaning_method(input: ParseStream, meaning_name: &str) -> Result<Meanin
     input.parse::<Token![fn]>()?;
     let mut is_constructor = false;
     let id = input.parse::<Ident>()?;
-    if id.to_string() == meaning_name {
+    if !is_override && id.to_string() == meaning_name {
         // id.span().unwrap().error("Identifier must be equals \"constructor\"").emit();
         is_constructor = true;
     }
