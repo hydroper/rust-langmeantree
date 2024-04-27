@@ -16,7 +16,7 @@ Reference links:
 ## Example
 
 ```rust
-use langmeantree::{Arena, langmeantree};
+use langmeantree::langmeantree;
 
 langmeantree! {
     type Arena = MeaningArena;

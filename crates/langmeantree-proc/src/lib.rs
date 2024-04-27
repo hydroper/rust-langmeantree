@@ -11,19 +11,12 @@ use syn::token::{Brace, Comma, Pub};
 // use syn::spanned::Spanned;
 use syn::{parse_macro_input, Ident, Token, Path, Visibility, Attribute, Type, Expr, Generics, FnArg, Stmt, braced, WhereClause, parenthesized};
 
-struct MeaningExtends {
-    /// Types in descending order
-    type_sequence: Vec<Path>,
-    component_type: Path,
-    oop_inheritance_crate: Option<proc_macro2::TokenStream>,
-}
-
 fn parse_full_qualified_id(input: ParseStream) -> Result<Path> {
     Ok(Path::parse_mod_style(input)?)
 }
 
 struct MeaningTree {
-    arena_type_name: Option<proc_macro2::TokenStream>,
+    arena_type_name: proc_macro2::TokenStream,
     meanings: Vec<Meaning>,
 }
 
@@ -31,9 +24,9 @@ struct Meaning {
     attributes: Vec<Attribute>,
     visibility: Visibility,
     name: Ident,
-    inherits: Option<Vec<Path>>,
+    inherits: Option<Path>,
     fields: Vec<MeaningField>,
-    constructor: MeaningConstructor,
+    constructor: Option<MeaningConstructor>,
     methods: Vec<MeaningMethod>,
 }
 
@@ -71,6 +64,65 @@ struct MeaningMethod {
 
 impl Parse for MeaningTree {
     fn parse(input: ParseStream) -> Result<Self> {
+        let arena_type_name = parse_meaning_arena_type_name(input)?.to_token_stream();
+        let mut meanings = vec![];
+        while !input.is_empty() {
+            meanings.push(input.parse::<Meaning>()?);
+        }
+        Ok(Self {
+            arena_type_name,
+            meanings,
+        })
+    }
+}
+
+impl Parse for Meaning {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let attributes = Attribute::parse_outer(input)?;
+        let visibility = input.parse::<Visibility>()?;
+ 
+        input.parse::<Token![struct]>()?;
+ 
+        let name = input.parse::<Ident>()?;
+        let name_str = name.to_string();
+
+        // Inherits
+        let mut inherits: Option<Path> = None;
+        if input.peek(Token![:]) {
+            input.parse::<Token![:]>();
+            inherits = Some(Path::parse_mod_style(input)?);
+        }
+
+        let mut fields: Vec<MeaningField> = vec![];
+        let mut constructor: Option<MeaningConstructor> = None;
+        let mut methods: Vec<MeaningMethod> = vec![];
+        let braced_content;
+        let _ = braced!(braced_content in input);
+
+        while !braced_content.is_empty() {
+            if input.peek(Token![let]) {
+                fields.push(parse_meaning_field(input)?);
+            } else {
+                match parse_meaning_method(input, &name_str)? {
+                    MeaningMethodOrConstructor::Constructor(ctor) => {
+                        constructor = Some(ctor);
+                    },
+                    MeaningMethodOrConstructor::Method(m) => {
+                        methods.push(m);
+                    },
+                }
+            }
+        }
+
+        Ok(Self {
+            attributes,
+            visibility,
+            name,
+            inherits,
+            fields,
+            constructor,
+            methods,
+        })
     }
 }
 
@@ -99,6 +151,7 @@ fn parse_meaning_field(input: ParseStream) -> Result<MeaningField> {
     let type_annotation = input.parse::<Type>()?;
     input.parse::<Token![=]>()?;
     let default_value = input.parse::<Expr>()?;
+    input.parse::<Token![;]>()?;
 
     Ok(MeaningField {
         is_mut,
@@ -170,11 +223,11 @@ fn parse_meaning_method(input: ParseStream, meaning_name: &str) -> Result<Meanin
     }))
 }
 
-fn parse_meaning_oop_inheritance_crate_ref(input: ParseStream) -> Result<Path> {
-    input.parse::<Token![use]>()?;
+fn parse_meaning_arena_type_name(input: ParseStream) -> Result<Path> {
+    input.parse::<Token![type]>()?;
     let id = input.parse::<Ident>()?;
-    if id.to_string() != "oop_inheritance" {
-        id.span().unwrap().error("Identifier must be equals \"oop_inheritance\"").emit();
+    if id.to_string() != "Arena" {
+        id.span().unwrap().error("Identifier must be equals \"Arena\"").emit();
     }
     input.parse::<Token![=]>()?;
     let path = Path::parse_mod_style(input)?;
@@ -183,7 +236,7 @@ fn parse_meaning_oop_inheritance_crate_ref(input: ParseStream) -> Result<Path> {
 }
 
 #[proc_macro]
-pub fn class(input: TokenStream) -> TokenStream {
+pub fn langmeantree(input: TokenStream) -> TokenStream {
     let MeaningTree {
         arena_type_name, meanings
     } = parse_macro_input!(input as MeaningTree);
