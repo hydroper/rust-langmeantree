@@ -4,6 +4,8 @@ The `langmeantree` crate provides an intuitive way to describe meanings of a lan
 
 `langmeantree` may be used for language compiler codebases for representing meanings, also referred to as *symbol* references.
 
+*Note: this crate is not yet implemented.*
+
 ## To do
 
 Reference links:
@@ -30,9 +32,7 @@ Steps after parsing:
     * [ ] `name()`
     * [ ] `defined_in()`
     * [ ] `attributes()`
-    * [ ] `overriders()`
-    * [ ] `overrides()`
-    * [ ] `set_overrides()`
+    * [ ] `override_code_list()`
 * [ ] Output `type ArenaName = Arena<__data__::Meaning>;`
 * [ ] 1. Traverse all meanings in a first pass
   * [ ] Create a `MeaningSlot`, setting the inherited type properly.
@@ -52,11 +52,11 @@ Steps after parsing:
       * [ ] Get value by reading the correct base (it is either `self.0` or `self.0` followed by multiple `.0` depending on the number of inherited meanings, followed by `upgrade().unwrap()` and surrounded by a match)
     * [ ] 3.2.7 Define a mutable getter (`x_mut()`)
       * [ ] 3.2.7.1 For `ref` (returns `::std::cell::RefMut<T>`)
-      * [ ] Get value by reading the correct base (it is either `self.0` or `self.0` followed by multiple `.0` depending on the number of inherited meanings)
+      * [ ] Get value by reading the correct base similiarly to immutable getters
     * [ ] 3.2.8 Define a setter (`set_x()`)
       * [ ] 3.2.8.1 For non `ref`
       * [ ] 3.2.8.2 For `ref`
-      * [ ] Set value by reading the correct base (it is either `self.0` or `self.0` followed by multiple `.0` depending on the number of inherited meanings)
+      * [ ] Set value by reading the correct base similiarly to getters
   * [ ] 3.3 Define the structure `MeaningName`, as in `#[derive(Clone)] struct MeaningName(Weak<__data__::TopLevelMeaning>);`, or as in `#[derive(Clone, PartialEq, Hash)] struct MeaningName(InheritedMeaning)` if there is an inherited meaning.
     * [ ] Implement `PartialEq`
     * [ ] Implement `Hash`
@@ -65,11 +65,27 @@ Steps after parsing:
   * [ ] 3.4 Define the constructor
     * [ ] 3.4.1 Define the constructor *initializer* code as an instance `__lmt__ctor()` method
     * [ ] 3.4.2 Prepend an `arena: &MeaningArena` parameter to the constructor's input (not to the `__lmt__ctor()` method).
-    * [ ] 3.4.3 At the constructor output code, let `meaning` be a complex `arena.allocate(__data__::TopLevelMeaning { ... })` allocation initializing all meaning variants's fields with their default values.
+    * [ ] 3.4.3 At the constructor output code, let `meaning` be a complex `MeaningName(TopLevelMeaning(arena.allocate(__data__::TopLevelMeaning { ... })))` (notice the meaning layers) allocation initializing all meaning variants's fields with their default values.
     * [ ] 3.4.4 If the meaning inherits another meaning
       * [ ] 3.4.4.1 At the constructor output code, invoke `InheritedMeaning::__lmt__ctor(meaning, ...arguments)`, passing all `super(...)` arguments.
     * [ ] 3.4.5 Contribute all constructor initializer code to the `__lmt_ctor()` method.
+    * [ ] 3.4.6 Output a `meaning` return
+    * [ ] 3.4.7 Output the constructor as a static `new` method.
   * [ ] 3.5 Traverse each method
+    * [ ] Create a `MethodSlot` with the appropriate settings.
+    * [ ] Contribute the method slot to the meaning.
+    * [ ] For each `super.f(...)` call within the method's block
+      * [ ] Lookup for a `f` method in the inherited meanings in descending order
+      * [ ] If nothing found, report an error at that `super.f(...)` call; otherwise
+        * [ ] Replace `super.f(...)` by `InheritedMeaning::f(self, ...)`
+    * [ ] Parse the modified method's block as a statement sequence
+    * [ ] If the method is marked as `override`
+      * [ ] Lookup for a method with the same name in the inherited meanings in descending order
+        * [ ] If nothing found, report an error at the method's identifier; otherwise
+          * [ ] ...
+    * [ ] Contribute the method to the output
+
+*To do*: finish describing the overriding steps.
 
 ## Definition order
 
