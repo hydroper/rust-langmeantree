@@ -1,8 +1,8 @@
-# Meaning trees for Rust
+# langmeantree
 
 The `langmeantree` crate provides an intuitive way to describe meanings of a language using dynamic dispatches and hierarchy definitions using an arena.
 
-`langmeantree` may be used for language compiler codebases.
+`langmeantree` may be used for language compiler codebases for representing meanings, also referred to as *symbol* references.
 
 ## To do
 
