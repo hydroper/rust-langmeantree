@@ -13,6 +13,25 @@ Reference links:
 - https://docs.rs/syn/latest/syn/
 - https://docs.rs/proc-macro2/latest/proc_macro2/
 
+Steps after parsing:
+
+* [ ] Define `MeaningSymbol` in a semantic model using an arena and a factory
+  * [ ] `MeaningSlot`
+  * [ ] `MethodSlot`
+* [ ] Output `type ArenaName = Arena<__data__::Meaning>;`
+* [ ] 1. Traverse all meanings in a first pass
+  * [ ] Create a `MeaningSlot`, setting the inherited type properly.
+* [ ] 2. Define the data module `__data__`
+* [ ] 3. Traverse each *meaning*
+  * [ ] 3.1 Define the data structure `__data__::MeaningName`
+  * [ ] 3.2 Define the constructor
+
+## Definition order
+
+Definition order is sensitive. Define submeanings after their inherited meanings while using the `struct` keyword.
+
+If you define in `struct`s in any order, you may get a compile-time error.
+
 ## Example
 
 ```rust
