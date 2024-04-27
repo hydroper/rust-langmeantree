@@ -17,8 +17,22 @@ Steps after parsing:
 
 * [ ] Define `MeaningSymbol` in a semantic model using an arena and a factory
   * [ ] `MeaningSlot`
+    * [ ] `name()`
+    * [ ] `inherits()`
+    * [ ] `set_inherits()`
+    * [ ] `methods()`
   * [ ] `FieldSlot`
+    * [ ] `name()`
+    * [ ] `field_type()` annotation
+    * [ ] `field_initializer()` expression
+    * [ ] `is_ref()`
   * [ ] `MethodSlot`
+    * [ ] `name()`
+    * [ ] `defined_in()`
+    * [ ] `attributes()`
+    * [ ] `overriders()`
+    * [ ] `overrides()`
+    * [ ] `set_overrides()`
 * [ ] Output `type ArenaName = Arena<__data__::Meaning>;`
 * [ ] 1. Traverse all meanings in a first pass
   * [ ] Create a `MeaningSlot`, setting the inherited type properly.
@@ -35,19 +49,27 @@ Steps after parsing:
     * [ ] 3.2.6 Define a getter (`x()`)
       * [ ] 3.2.6.1 For non `ref`
       * [ ] 3.2.6.2 For `ref`
+      * [ ] Get value by reading the correct base (it is either `self.0` or `self.0` followed by multiple `.0` depending on the number of inherited meanings, followed by `upgrade().unwrap()` and surrounded by a match)
     * [ ] 3.2.7 Define a mutable getter (`x_mut()`)
       * [ ] 3.2.7.1 For `ref` (returns `::std::cell::RefMut<T>`)
-    * [ ] 3.2.8 Define a setter (`x_mut()`)
+      * [ ] Get value by reading the correct base (it is either `self.0` or `self.0` followed by multiple `.0` depending on the number of inherited meanings)
+    * [ ] 3.2.8 Define a setter (`set_x()`)
       * [ ] 3.2.8.1 For non `ref`
       * [ ] 3.2.8.2 For `ref`
-  * [ ] 3.3 Define the constructor
-    * [ ] 3.3.1 Define the constructor *initializer* code as an instance `__lmt__ctor()` method
-    * [ ] 3.3.2 Prepend an `arena: &MeaningArena` parameter to the constructor's input (not to the `__lmt__ctor()` method).
-    * [ ] 3.3.3 At the constructor output code, let `meaning` be a complex `arena.allocate(__data__::TopLevelMeaning { ... })` allocation initializing all meaning variants's fields with their default values.
-    * [ ] 3.3.4 If the meaning inherits another meaning
-      * [ ] 3.3.4.1 At the constructor output code, invoke `InheritedMeaning::__lmt__ctor(meaning, ...arguments)`, passing all `super(...)` arguments.
-    * [ ] 3.3.5 Contribute all constructor initializer code to the `__lmt_ctor()` method.
-  * [ ] 3.4 Traverse each method
+      * [ ] Set value by reading the correct base (it is either `self.0` or `self.0` followed by multiple `.0` depending on the number of inherited meanings)
+  * [ ] 3.3 Define the structure `MeaningName`, as in `#[derive(Clone)] struct MeaningName(Weak<__data__::TopLevelMeaning>);`, or as in `#[derive(Clone, PartialEq, Hash)] struct MeaningName(InheritedMeaning)` if there is an inherited meaning.
+    * [ ] Implement `PartialEq`
+    * [ ] Implement `Hash`
+    * [ ] If the meaning inherits another meaning
+      * [ ] Implement `Deref<Target = InheritedMeaning>`
+  * [ ] 3.4 Define the constructor
+    * [ ] 3.4.1 Define the constructor *initializer* code as an instance `__lmt__ctor()` method
+    * [ ] 3.4.2 Prepend an `arena: &MeaningArena` parameter to the constructor's input (not to the `__lmt__ctor()` method).
+    * [ ] 3.4.3 At the constructor output code, let `meaning` be a complex `arena.allocate(__data__::TopLevelMeaning { ... })` allocation initializing all meaning variants's fields with their default values.
+    * [ ] 3.4.4 If the meaning inherits another meaning
+      * [ ] 3.4.4.1 At the constructor output code, invoke `InheritedMeaning::__lmt__ctor(meaning, ...arguments)`, passing all `super(...)` arguments.
+    * [ ] 3.4.5 Contribute all constructor initializer code to the `__lmt_ctor()` method.
+  * [ ] 3.5 Traverse each method
 
 ## Definition order
 
@@ -134,6 +156,8 @@ It is recommended for fields to always start with a underscore `_`, and conseque
 ## Super expression
 
 The `super.f()` expression is supported by preprocessing the token sequence of a method and transforming it into another Rust code; therefore, it may be used anywhere within an instance method.
+
+`super.f()` does a lookup in the method lists in the descending meanings.
 
 ## Documentation
 
