@@ -24,25 +24,8 @@ Steps after parsing:
   * [x] `OverrideLogicMapping` structure
 * [x] 1. Output `type ArenaName = ::langmeantree::Arena<__data__::Meaning>;`
 * [x] 2. Traverse all meanings in a first pass
-* [ ] 3. Traverse each *meaning*
-  * [ ] 3.1 Traverse each field
-    * [ ] 3.1.1 Create a `FieldSlot`.
-    * [ ] 3.1.2 Contribute a field to the `__data__::MeaningName` structure.
-    * [ ] 3.1.3 Store the default initializer expression in the slot.
-    * [ ] 3.1.4 Store the type annotation in the slot.
-    * [ ] 3.1.5 Store about whether the slot is a `ref` field or not.
-    * [ ] 3.1.6 Define a getter (`x()`)
-      * [ ] 3.1.6.1 For non `ref`
-      * [ ] 3.1.6.2 For `ref`
-      * [ ] Get value by reading the correct base (it is either `self.0` or `self.0` followed by multiple `.0` depending on the number of inherited meanings, followed by `upgrade().unwrap()` and surrounded by a match)
-    * [ ] 3.1.7 Define a mutable getter (`x_mut()`)
-      * [ ] 3.1.7.1 For `ref` (returns `::std::cell::RefMut<T>`)
-      * [ ] Get value by reading the correct base similiarly to immutable getters
-    * [ ] 3.1.8 Define a setter (`set_x()`)
-      * [ ] 3.1.8.1 For non `ref`
-      * [ ] 3.1.8.2 For `ref`
-      * [ ] Set value by reading the correct base similiarly to getters
-    * [ ] 3.1.9. Define the data structure `__data__::MeaningName`
+* [ ] 3. Traverse each meaning
+  * [ ] 3.1 Traverse each field (see below section 3.1)
   * [ ] 3.2 Define the structure `MeaningName`, as in `#[derive(Clone)] struct MeaningName(Weak<__data__::TopLevelMeaning>);`, or as in `#[derive(Clone, PartialEq, Hash)] struct MeaningName(InheritedMeaning)` if there is an inherited meaning.
     * [ ] Implement `PartialEq`
     * [ ] Implement `Hash`
@@ -80,6 +63,27 @@ Steps after parsing:
   * [ ] 3.7 Contribute a `From<MeaningName> for InheritedMeaning` implementation (covariant conversion)
   * [ ] 3.8 Contribute a `TryFrom<InheritedMeaning> for MeaningName` implementation (contravariant conversion)
 * [ ] 4. Output the `mod __data__ { use super::*; ... }` module with its respective contents
+
+### 3.1
+
+* [ ] 1. Create a `FieldSlot`.
+* [ ] 2. Contribute the field slot to the meaning slot.
+* [ ] 3. Contribute a field to the `__data__::MeaningName` structure.
+* [ ] 4. Store the default initializer expression in the slot.
+* [ ] 5. Store the type annotation in the slot.
+* [ ] 6. Store about whether the slot is a `ref` field or not.
+* [ ] 7. Define a getter (`x()`)
+  * [ ] 7.1. For non `ref`
+  * [ ] 7.2. For `ref`
+  * [ ] Get value by reading the correct base (it is either `self.0` or `self.0` followed by multiple `.0` depending on the number of inherited meanings, followed by `upgrade().unwrap()` and surrounded by a match)
+* [ ] 8. Define a mutable getter (`x_mut()`)
+  * [ ] 8.1. For `ref` (returns `::std::cell::RefMut<T>`)
+  * [ ] Get value by reading the correct base similiarly to immutable getters
+* [ ] 9. Define a setter (`set_x()`)
+  * [ ] 9.1. For non `ref`
+  * [ ] 9.2. For `ref`
+  * [ ] Set value by reading the correct base similiarly to getters
+* [ ] 10. Define the data structure `__data__::MeaningName`
 
 ## Definition order
 

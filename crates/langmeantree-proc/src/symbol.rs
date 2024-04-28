@@ -34,6 +34,7 @@ impl LmtFactory {
             name,
             inherits: RefCell::new(None),
             submeanings: shared_array![],
+            fields: shared_map![],
             methods: shared_map![],
         }))))
     }
@@ -124,6 +125,13 @@ impl Symbol {
         }
     }
 
+    pub fn fields(&self) -> SharedMap<String, Symbol> {
+        match access!(self) {
+            Symbol1::MeaningSlot(slot) => slot.fields.clone(),
+            _ => panic!(),
+        }
+    }
+
     pub fn methods(&self) -> SharedMap<String, Symbol> {
         match access!(self) {
             Symbol1::MeaningSlot(slot) => slot.methods.clone(),
@@ -190,6 +198,7 @@ struct MeaningSlot1 {
     name: String,
     inherits: RefCell<Option<Symbol>>,
     submeanings: SharedArray<Symbol>,
+    fields: SharedMap<String, Symbol>,
     methods: SharedMap<String, Symbol>,
 }
 
@@ -245,6 +254,7 @@ impl OverrideLogicMapping {
 /// * `inherits()`
 /// * `set_inherits()`
 /// * `submeanings()`
+/// * `fields()`
 /// * `methods()`
 #[derive(Clone, Hash, PartialEq, Eq)]
 pub struct MeaningSlot(pub Symbol);
