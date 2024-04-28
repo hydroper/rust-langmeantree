@@ -1,4 +1,14 @@
 #![feature(proc_macro_diagnostic)]
+#![feature(decl_macro)]
+
+mod shared_array;
+use shared_array::*;
+
+mod shared_map;
+use shared_map::*;
+
+mod symbol;
+use symbol::*;
 
 // use std::iter::FromIterator;
 use proc_macro::TokenStream;

@@ -11,24 +11,19 @@ The `langmeantree` crate provides an intuitive way to describe meanings of a lan
 Reference links:
 
 - https://github.com/hydroper/rust-class/blob/master/crates/oop_inheritance_proc/src/lib.rs
-- https://github.com/hydroper/as3parser/wiki/Symbol-solvers
 - https://docs.rs/syn/latest/syn/
 - https://docs.rs/proc-macro2/latest/proc_macro2/
 
 Steps after parsing:
 
-* [ ] Define `MeaningSymbol` in a semantic model using an arena and a factory
+* [ ] Define `Symbol` in a semantic model using an arena and a factory
   * [ ] `MeaningSlot`
     * [ ] `name()`
     * [ ] `inherits()`
     * [ ] `set_inherits()`
     * [ ] `submeanings()`
     * [ ] `methods()`
-  * [ ] `FieldSlot`
-    * [ ] `name()`
-    * [ ] `field_type()` annotation
-    * [ ] `field_initializer()` expression
-    * [ ] `is_ref()`
+  * [x] `FieldSlot`
   * [ ] `MethodSlot`
     * [ ] `name()`
     * [ ] `defined_in()`
