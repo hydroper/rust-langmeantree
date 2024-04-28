@@ -13,6 +13,9 @@ use symbol::*;
 mod tree_semantics;
 use tree_semantics::*;
 
+mod processing;
+use processing::*;
+
 // use std::iter::FromIterator;
 use proc_macro::TokenStream;
 // use proc_macro2::Span;
@@ -247,9 +250,9 @@ pub fn langmeantree(input: TokenStream) -> TokenStream {
         arena_type_name, meanings
     } = parse_macro_input!(input as MeaningTree);
 
-    let mut expanded = TokenStream::new();
+    let mut host = LmtHost::new();
 
     //
 
-    expanded
+    host.output
 }

@@ -18,11 +18,11 @@ impl<T> Arena<T> {
     }
 }
 
-pub struct LmtHost {
+pub struct LmtFactory {
     arena: Arena<Symbol1>,
 }
 
-impl LmtHost {
+impl LmtFactory {
     pub fn new() -> Self {
         Self {
             arena: Arena::new(),
