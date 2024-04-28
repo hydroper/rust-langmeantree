@@ -83,19 +83,18 @@ Steps after parsing:
     * [ ] For each `super.f(...)` call within the method's block
       * [ ] Lookup for a `f` method in the inherited meanings in descending order
       * [ ] If nothing found, report an error at that `super.f(...)` call; otherwise
-        * [ ] Replace `super.f(...)` by `InheritedMeaning::f(self, ...)`
+        * [ ] Replace `super.f(...)` by `InheritedMeaning::__lmt_nondispatch_f(self, ...)`
     * [ ] Parse the modified method's block as a statement sequence
     * [ ] If the method is marked as `override`
       * [ ] Lookup for a method with the same name in the inherited meanings in descending order
         * [ ] If nothing found, report an error at the method's identifier; otherwise
-          * [ ] ...
-    * [ ] Contribute the method to the output
+          * [ ] Contribute "overriding" return call code to the respective override logic mapping according to meaning inheritance
+    * [ ] Contribute the method `__lmt_nondispatch_m` without dynamic dispatch to the output
+    * [ ] Contribute the method `m` with dynamic dispatch to the output
   * [ ] 3.6 Contribute a `to::<T: TryInto<MeaningName>>()` method that uses `TryInto`
   * [ ] 3.7 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
   * [ ] 3.8 Contribute a `From<MeaningName> for InheritedMeaning` implementation (covariant conversion)
   * [ ] 3.9 Contribute a `TryFrom<InheritedMeaning> for MeaningName` implementation (contravariant conversion)
-
-*To do*: finish describing the overriding steps.
 
 ## Definition order
 
