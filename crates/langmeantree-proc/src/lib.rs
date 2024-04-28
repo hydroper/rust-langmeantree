@@ -21,7 +21,7 @@ use proc_macro::TokenStream;
 // use proc_macro2::Span;
 use quote::{quote, ToTokens};
 // use quote::{quote, quote_spanned};
-use syn::parse::{Parse, ParseBuffer, ParseStream, Result};
+use syn::parse::{Parse, ParseStream, Result};
 use syn::punctuated::Punctuated;
 use syn::token::{Brace, Comma};
 // use syn::spanned::Spanned;
@@ -34,9 +34,8 @@ use std::ops::Deref;
 use std::rc::{Rc, Weak};
 use by_address::ByAddress;
 
-fn parse_full_qualified_id(input: ParseStream) -> Result<Path> {
-    Ok(Path::parse_mod_style(input)?)
-}
+const DATA_VARIANT_FIELD: &'static str = "__variant";
+const DATA_VARIANT_PREFIX: &'static str = "__variant_";
 
 struct MeaningTree {
     arena_type_name: proc_macro2::TokenStream,
@@ -295,6 +294,8 @@ pub fn langmeantree(input: TokenStream) -> TokenStream {
             continue;
         };
 
+        let submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + &meaning.name();
+
         // 3.1. Write out the base data accessor
         //
         // For example, for the base meaning data type, this
@@ -310,7 +311,7 @@ pub fn langmeantree(input: TokenStream) -> TokenStream {
 
         // 3.2. Traverse each field.
         for field in meaning_node.fields.iter() {
-            ProcessingStep3_2().exec(&mut host, &meaning, field, &base_accessor);
+            ProcessingStep3_2().exec(&mut host, &meaning, field, &base_accessor, &submeaning_enum);
         }
     }
 

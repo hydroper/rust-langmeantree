@@ -28,21 +28,24 @@ Steps after parsing:
 * [ ] 3. Traverse each meaning
   * [x] 3.1 Write out the base data accessor
   * [ ] 3.2 Traverse each field (see below section 3.2)
-  * [ ] 3.3 Define the structure `MeaningName`, as in `#[derive(Clone)] struct MeaningName(Weak<__data__::TopLevelMeaning>);`, or as in `#[derive(Clone, PartialEq, Hash)] struct MeaningName(InheritedMeaning)` if there is an inherited meaning.
+  * [ ] 3.3 Contribute a `#DATA_VARIANT_FIELD` field to `__data__::M` holding the enumeration of submeanings.
+  * [ ] 3.4 Contribute a `#[non_exhaustive]` enumeration of submeanings whose name is `submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + meaning_name` at the `__data__` module.
+  * [ ] 3.5. Define the data structure `__data__::M` at the `__data__` module output, containing all field output.
+  * [ ] 3.6 Define the structure `MeaningName`, as in `#[derive(Clone)] struct MeaningName(Weak<__data__::TopLevelMeaning>);`, or as in `#[derive(Clone, PartialEq, Hash)] struct MeaningName(InheritedMeaning)` if there is an inherited meaning.
     * [ ] Implement `PartialEq`
     * [ ] Implement `Hash`
     * [ ] If the meaning inherits another meaning
       * [ ] Implement `Deref<Target = InheritedMeaning>`
-  * [ ] 3.4 Define the constructor
-    * [ ] 3.4.1 Define the constructor *initializer* code as an instance `__lmt__ctor()` method
-    * [ ] 3.4.2 Prepend an `arena: &MeaningArena` parameter to the constructor's input (not to the `__lmt__ctor()` method).
-    * [ ] 3.4.3 At the constructor output code, let `meaning` be a complex `MeaningName(TopLevelMeaning(arena.allocate(__data__::TopLevelMeaning { ... })))` (notice the meaning layers) allocation initializing all meaning variants's fields with their default values.
-    * [ ] 3.4.4 If the meaning inherits another meaning
-      * [ ] 3.4.4.1 At the constructor output code, invoke `InheritedMeaning::__lmt__ctor(meaning, ...arguments)`, passing all `super(...)` arguments.
-    * [ ] 3.4.5 Contribute all constructor initializer code to the `__lmt_ctor()` method.
-    * [ ] 3.4.6 Output a `meaning` return
-    * [ ] 3.4.7 Output the constructor as a static `new` method.
-  * [ ] 3.5 Traverse each method
+  * [ ] 3.7 Define the constructor
+    * [ ] 3.7.1 Define the constructor *initializer* code as an instance `__lmt__ctor()` method
+    * [ ] 3.7.2 Prepend an `arena: &MeaningArena` parameter to the constructor's input (not to the `__lmt__ctor()` method).
+    * [ ] 3.7.3 At the constructor output code, let `meaning` be a complex `MeaningName(TopLevelMeaning(arena.allocate(__data__::TopLevelMeaning { ... })))` (notice the meaning layers) allocation initializing all meaning variants's fields with their default values.
+    * [ ] 3.7.4 If the meaning inherits another meaning
+      * [ ] 3.7.4.1 At the constructor output code, invoke `InheritedMeaning::__lmt__ctor(meaning, ...arguments)`, passing all `super(...)` arguments.
+    * [ ] 3.7.5 Contribute all constructor initializer code to the `__lmt_ctor()` method.
+    * [ ] 3.7.6 Output a `meaning` return
+    * [ ] 3.7.7 Output the constructor as a static `new` method.
+  * [ ] 3.8 Traverse each method
     * [ ] Create a `MethodSlot` with the appropriate settings.
     * [ ] Contribute the method slot to the meaning.
     * [ ] Check if the method has a `#[inheritdoc]` attribute; if it has one
@@ -60,11 +63,11 @@ Steps after parsing:
           * [ ] Contribute "overriding" return call code to the respective override logic mapping according to meaning inheritance
     * [ ] Contribute the method `__lmt_nondispatch_m` without dynamic dispatch to the output
     * [ ] Contribute the method `m` with dynamic dispatch, invoking `self.__lmt_nondispatch_m()` at the end of the method body, to the output
-  * [ ] 3.6 Contribute a `to::<T: TryInto<MeaningName>>()` method that uses `TryInto`
-  * [ ] 3.7 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
-  * [ ] 3.8 Output the code of all methods to an `impl` block for the meaning data type.
-  * [ ] 3.9 Output a `From<MeaningName> for InheritedMeaning` implementation (covariant conversion)
-  * [ ] 3.10 Output a `TryFrom<InheritedMeaning> for MeaningName` implementation (contravariant conversion)
+  * [ ] 3.9 Contribute a `to::<T: TryInto<MeaningName>>()` method that uses `TryInto`
+  * [ ] 3.10 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
+  * [ ] 3.11 Output the code of all methods to an `impl` block for the meaning data type.
+  * [ ] 3.12 Output a `From<MeaningName> for InheritedMeaning` implementation (covariant conversion)
+  * [ ] 3.13 Output a `TryFrom<InheritedMeaning> for MeaningName` implementation (contravariant conversion)
 * [ ] 4. Output the `mod __data__ { use super::*; ... }` module with its respective contents
 
 ### 3.1
@@ -76,7 +79,6 @@ Given a meaning and a field:
 * [x] 3. Contribute a field to the `__data__::M` structure.
 * [ ] 4. Define accessors
   * [ ] Perform pattern matching in `#base_accessor`
-* [ ] 5. Define the data structure `__data__::M` at the `__data__` module output.
 
 ## Definition order
 

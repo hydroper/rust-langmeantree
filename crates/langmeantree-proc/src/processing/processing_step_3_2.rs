@@ -3,7 +3,7 @@ use crate::*;
 pub struct ProcessingStep3_2();
 
 impl ProcessingStep3_2 {
-    pub fn exec(&self, host: &mut LmtHost, meaning: &Symbol, field: &Rc<MeaningField>, base_accessor: &str) {
+    pub fn exec(&self, host: &mut LmtHost, meaning: &Symbol, field: &Rc<MeaningField>, base_accessor: &str, submeaning_enum: &str) {
         let mut field_output = TokenStream::new();
 
         // 1. Create a FieldSlot.
@@ -31,10 +31,10 @@ impl ProcessingStep3_2 {
         }
 
         // 4. Define accessors
-        self.define_accessors(host, meaning, &slot, &field_name, &field_type, base_accessor);
+        self.define_accessors(host, meaning, &slot, &field_name, &field_type, base_accessor, submeaning_enum);
     }
 
-    fn define_accessors(&self, host: &mut LmtHost, meaning: &Symbol, slot: &Symbol, field_name: &str, field_type: &Type, base_accessor: &str) {
+    fn define_accessors(&self, host: &mut LmtHost, meaning: &Symbol, slot: &Symbol, field_name: &str, field_type: &Type, base_accessor: &str, submeaning_enum: &str) {
         let setter_name = format!("set_{}", field_name);
 
         if slot.is_ref() {
