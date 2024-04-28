@@ -285,13 +285,20 @@ pub fn langmeantree(input: TokenStream) -> TokenStream {
     }.try_into().unwrap());
 
     // 2. Traverse each meaning in a first pass.
-
-    ProcessingStep2().exec(&mut host, &meanings);
+    for meaning_node in meanings.iter() {
+        ProcessingStep2().exec(&mut host, meaning_node);
+    }
 
     // 3. Traverse each meaning.
-
     for meaning_node in meanings.iter() {
-        ProcessingStep3_1().exec(&mut host, &meanings);
+        let Some(meaning) = host.semantics.get(meaning_node) else {
+            continue;
+        };
+
+        // 3.1 Traverse each field.
+        for field in meaning_node.fields.iter() {
+            ProcessingStep3_1().exec(&mut host, &meaning, field);
+        }
     }
 
     // 4.

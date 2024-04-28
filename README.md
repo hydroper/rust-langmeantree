@@ -13,6 +13,7 @@ Reference links:
 - https://github.com/hydroper/rust-class/blob/master/crates/oop_inheritance_proc/src/lib.rs
 - https://docs.rs/syn/latest/syn/
 - https://docs.rs/proc-macro2/latest/proc_macro2/
+- https://docs.rs/quote/latest/quote/
 
 Steps after parsing:
 
@@ -66,24 +67,23 @@ Steps after parsing:
 
 ### 3.1
 
-* [ ] 1. Create a `FieldSlot`.
-* [ ] 2. Contribute the field slot to the meaning slot.
-* [ ] 3. Contribute a field to the `__data__::MeaningName` structure.
-* [ ] 4. Store the default initializer expression in the slot.
-* [ ] 5. Store the type annotation in the slot.
-* [ ] 6. Store about whether the slot is a `ref` field or not.
-* [ ] 7. Define a getter (`x()`)
-  * [ ] 7.1. For non `ref`
-  * [ ] 7.2. For `ref`
+Given a meaning and a field:
+
+* [x] 1. Create a `FieldSlot`.
+* [x] 2. Contribute the field slot to the meaning slot.
+* [x] 3. Contribute a field to the `__data__::M` structure.
+* [ ] 4. Define a getter (`x()`)
+  * [ ] 4.1. For non `ref`
+  * [ ] 4.2. For `ref`
   * [ ] Get value by reading the correct base (it is either `self.0` or `self.0` followed by multiple `.0` depending on the number of inherited meanings, followed by `upgrade().unwrap()` and surrounded by a match)
-* [ ] 8. Define a mutable getter (`x_mut()`)
-  * [ ] 8.1. For `ref` (returns `::std::cell::RefMut<T>`)
+* [ ] 5. Define a mutable getter (`x_mut()`)
+  * [ ] 5.1. For `ref` (returns `::std::cell::RefMut<T>`)
   * [ ] Get value by reading the correct base similiarly to immutable getters
-* [ ] 9. Define a setter (`set_x()`)
-  * [ ] 9.1. For non `ref`
-  * [ ] 9.2. For `ref`
+* [ ] 6. Define a setter (`set_x()`)
+  * [ ] 6.1. For non `ref`
+  * [ ] 6.2. For `ref`
   * [ ] Set value by reading the correct base similiarly to getters
-* [ ] 10. Define the data structure `__data__::MeaningName`
+* [ ] 7. Define the data structure `__data__::M` at the `__data__` module output.
 
 ## Definition order
 
