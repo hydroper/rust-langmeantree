@@ -75,7 +75,7 @@ struct MeaningConstructor {
 }
 
 struct MeaningMethod {
-    attributes: Vec<Attribute>,
+    attributes: RefCell<Vec<Attribute>>,
     visibility: Visibility,
     is_override: bool,
     name: Ident,
@@ -200,7 +200,7 @@ fn parse_meaning_method(input: ParseStream, meaning_name: &str) -> Result<Meanin
 
     if !is_constructor {
         return Ok(MeaningMethodOrConstructor::Method(MeaningMethod {
-            attributes,
+            attributes: RefCell::new(attributes),
             visibility,
             is_override,
             name: id,
@@ -279,16 +279,26 @@ pub fn langmeantree(input: TokenStream) -> TokenStream {
 
     // # Processing steps
 
-    // 1. Output the arena type
+    // 1. Output the arena type.
     host.output.extend::<TokenStream>(quote! {
         type #arena_type_name = ::langmeantree::Arena<__data__::#base_meaning_name>;
     }.try_into().unwrap());
 
-    // 2.
+    // 2. Traverse each meaning in a first pass.
 
     ProcessingStep2().exec(&mut host, &meanings);
 
-    // 3.
+    // 3. Traverse each meaning.
+
+    for meaning_node in meanings.iter() {
+        ProcessingStep3_1().exec(&mut host, &meanings);
+    }
+
+    // 4.
+
+    todo!();
+
+    // 5. Return output.
 
     host.output
 }
