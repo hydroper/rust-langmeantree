@@ -22,6 +22,7 @@ Steps after parsing:
     * [ ] `name()`
     * [ ] `inherits()`
     * [ ] `set_inherits()`
+    * [ ] `submeanings()`
     * [ ] `methods()`
   * [ ] `FieldSlot`
     * [ ] `name()`
@@ -32,11 +33,16 @@ Steps after parsing:
     * [ ] `name()`
     * [ ] `defined_in()`
     * [ ] `attributes()`
-    * [ ] `override_code_list()`
+    * [ ] `override_logic_mapping(): SharedMap<MeaningSlot, OverrideLogicMapping>`
+  * [ ] `OverrideLogicMapping` structure
+    * [ ] `override_code()`
+    * [ ] `set_override_code()`
+    * [ ] `override_logic_mapping()`
 * [ ] Output `type ArenaName = Arena<__data__::Meaning>;`
 * [ ] 1. Traverse all meanings in a first pass
   * [ ] Create a `MeaningSlot`, setting the inherited type properly.
-  * [ ] If the inherited type failed to resolve, ignore that meaning (assuming the error was reported).
+  * [ ] If the inherited type failed to resolve, ignore that meaning (assuming the error was reported); otherwise
+    * [ ] Contribute the meaning to the inherited type's list of submeanings.
 * [ ] 2. Define the data module `__data__`
 * [ ] 3. Traverse each *meaning*
   * [ ] 3.1 Define the data structure `__data__::MeaningName`
@@ -84,6 +90,10 @@ Steps after parsing:
         * [ ] If nothing found, report an error at the method's identifier; otherwise
           * [ ] ...
     * [ ] Contribute the method to the output
+  * [ ] 3.6 Contribute a `to::<T: TryInto<MeaningName>>()` method that uses `TryInto`
+  * [ ] 3.7 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
+  * [ ] 3.8 Contribute a `From<MeaningName> for InheritedMeaning` implementation (covariant conversion)
+  * [ ] 3.9 Contribute a `TryFrom<InheritedMeaning> for MeaningName` implementation (contravariant conversion)
 
 *To do*: finish describing the overriding steps.
 
@@ -167,7 +177,8 @@ It is recommended for fields to always start with a underscore `_`, and conseque
 ## Submeanings
 
 * `meaning.is::<T>()` tests whether `meaning` is a `T` submeaning.
-* `meaning.to::<T>()` converts to the `T` meaning, returning `Ok(m)` or `Err`. It may be either a covariant or contravariant conversion.
+* `meaning.to::<T>()` converts to the `T` meaning, returning `Ok(m)` or `Err`. It may be a contravariant conversion.
+* `meaning.into()` is a covariant conversion.
 
 ## Super expression
 
