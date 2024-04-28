@@ -3,9 +3,7 @@ use crate::*;
 pub struct ProcessingStep3_2();
 
 impl ProcessingStep3_2 {
-    pub fn exec(&self, host: &mut LmtHost, meaning: &Symbol, field: &Rc<MeaningField>, base_accessor: &str, asc_meaning_list: &[Symbol]) {
-        let mut field_output = TokenStream::new();
-
+    pub fn exec(&self, host: &mut LmtHost, meaning: &Symbol, field: &Rc<MeaningField>, base_accessor: &str, asc_meaning_list: &[Symbol], field_output: &mut TokenStream) {
         // 1. Create a FieldSlot.
         let slot = host.factory.create_field_slot(field.is_ref, field.name.to_string(), field.type_annotation.clone(), field.default_value.clone());
 
@@ -22,11 +20,11 @@ impl ProcessingStep3_2 {
         let field_type = slot.field_type();
         if slot.is_ref() {
             field_output.extend::<TokenStream>(quote! {
-                #field_name: ::std::cell::RefCell<#field_type>,
+                pub #field_name: ::std::cell::RefCell<#field_type>,
             }.try_into().unwrap());
         } else {
             field_output.extend::<TokenStream>(quote! {
-                #field_name: ::std::cell::Cell<#field_type>,
+                pub #field_name: ::std::cell::Cell<#field_type>,
             }.try_into().unwrap());
         }
 
@@ -40,20 +38,20 @@ impl ProcessingStep3_2 {
 
         if slot.is_ref() {
             meaning.method_output().borrow_mut().extend::<TokenStream>(quote! {
-                pub fn #field_name(&self) -> #field_type {
+                fn #field_name(&self) -> #field_type {
                     #fv.borrow().clone()
                 }
-                pub fn #setter_name(&self, v: #field_type) {
+                fn #setter_name(&self, v: #field_type) {
                     $fv.replace(v);
                 }
             }.try_into().unwrap());
         } else {
             meaning.method_output().borrow_mut().extend::<TokenStream>(quote! {
-                pub fn #field_name(&self) -> #field_type {
+                fn #field_name(&self) -> #field_type {
                     #fv.get()
                 }
 
-                pub fn #setter_name(&self, v: #field_type) {
+                fn #setter_name(&self, v: #field_type) {
                     #fv.set(v);
                 }
             }.try_into().unwrap());

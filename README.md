@@ -28,14 +28,10 @@ Steps after parsing:
 * [ ] 3. Traverse each meaning
   * [x] 3.1 Write out the base data accessor
   * [x] 3.2 Traverse each field (see below section 3.2)
-  * [ ] 3.3 Contribute a `#DATA_VARIANT_FIELD` field to `__data__::M` holding the enumeration of submeanings.
-  * [ ] 3.4 Contribute a `#[non_exhaustive]` enumeration of submeanings whose name is `submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + meaning_name` at the `__data__` module.
-  * [ ] 3.5. Define the data structure `__data__::M` at the `__data__` module output, containing all field output.
-  * [ ] 3.6 Define the structure `MeaningName`, as in `#[derive(Clone)] struct MeaningName(Weak<__data__::TopLevelMeaning>);`, or as in `#[derive(Clone, PartialEq, Hash)] struct MeaningName(InheritedMeaning)` if there is an inherited meaning.
-    * [ ] Implement `PartialEq`
-    * [ ] Implement `Hash`
-    * [ ] If the meaning inherits another meaning
-      * [ ] Implement `Deref<Target = InheritedMeaning>`
+  * [x] 3.3 Contribute a `#DATA_VARIANT_FIELD` field to `__data__::M` holding the enumeration of submeanings.
+  * [x] 3.4 Contribute a `#[non_exhaustive]` enumeration of submeanings whose name is `submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + meaning_name` at the `__data__` module.
+  * [x] 3.5. Define the data structure `__data__::M` at the `__data__` module output, containing all field output.
+  * [x] 3.6 Define the structure `M`
   * [ ] 3.7 Define the constructor
     * [ ] 3.7.1 Define the constructor *initializer* code as an instance `__lmt__ctor()` method
     * [ ] 3.7.2 Prepend an `arena: &MeaningArena` parameter to the constructor's input (not to the `__lmt__ctor()` method).
@@ -66,8 +62,6 @@ Steps after parsing:
   * [ ] 3.9 Contribute a `to::<T: TryInto<MeaningName>>()` method that uses `TryInto`
   * [ ] 3.10 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
   * [ ] 3.11 Output the code of all methods to an `impl` block for the meaning data type.
-  * [ ] 3.12 Output a `From<MeaningName> for InheritedMeaning` implementation (covariant conversion)
-  * [ ] 3.13 Output a `TryFrom<InheritedMeaning> for MeaningName` implementation (contravariant conversion)
 * [ ] 4. Output the `mod __data__ { use super::*; ... }` module with its respective contents
 
 ## Definition order

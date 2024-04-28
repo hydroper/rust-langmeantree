@@ -301,6 +301,8 @@ pub fn langmeantree(input: TokenStream) -> TokenStream {
         };
 
         let asc_meaning_list = meaning.asc_meaning_list();
+        let mut field_output = TokenStream::new();
+        let meaning_name = meaning.name();
 
         // 3.1. Write out the base data accessor
         //
@@ -317,8 +319,41 @@ pub fn langmeantree(input: TokenStream) -> TokenStream {
 
         // 3.2. Traverse each field.
         for field in meaning_node.fields.iter() {
-            ProcessingStep3_2().exec(&mut host, &meaning, field, &base_accessor, &asc_meaning_list);
+            ProcessingStep3_2().exec(&mut host, &meaning, field, &base_accessor, &asc_meaning_list, &mut field_output);
         }
+
+        // 3.3. Contribute a #DATA_VARIANT_FIELD field to __data__::M
+        // holding the enumeration of submeanings.
+        let submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + &meaning_name;
+        field_output.extend::<TokenStream>(quote! {
+            pub #DATA_VARIANT_FIELD: #submeaning_enum,
+        }.try_into().unwrap());
+
+        // 3.4. Contribute a #[non_exhaustive] enumeration of submeanings at the `__data__` module.
+        let mut variants: Vec<String> = vec![];
+        for submeaning in meaning.submeanings().iter() {
+            let sn = submeaning.name();
+            variants.push(format!("{sn}(::std::rc::Rc<__data__::{sn}>)"));
+        }
+        host.data_output.extend::<TokenStream>(quote! {
+            #[non_exhaustive]
+            pub enum #submeaning_enum {
+                #(#variants),*
+            }
+        }.try_into().unwrap());
+
+        // 3.5. Define the data structure __data__::M at the __data__ module output,
+        // containing all field output.
+        let field_output = field_output.to_string();
+        host.data_output.extend::<TokenStream>(quote! {
+            #[non_exhaustive]
+            pub struct #meaning_name {
+                #field_output
+            }
+        }.try_into().unwrap());
+
+        // 3.6. Define the structure M
+        ProcessingStep3_6().exec(&mut host, &meaning, &base_accessor);
     }
 
     // 4.
