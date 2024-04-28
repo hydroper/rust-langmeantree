@@ -279,10 +279,14 @@ pub fn langmeantree(input: TokenStream) -> TokenStream {
 
     // # Processing steps
 
-    // 1. Output `type ArenaName = ::langmeantree::Arena<__data__::Meaning>;`
+    // 1. Output the arena type
     host.output.extend::<TokenStream>(quote! {
         type #arena_type_name = ::langmeantree::Arena<__data__::#base_meaning_name>;
     }.try_into().unwrap());
+
+    // 2.
+
+    ProcessingStep2().exec(&mut host, &meanings);
 
     host.output
 }
