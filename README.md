@@ -16,23 +16,12 @@ Reference links:
 
 Steps after parsing:
 
-* [ ] Define `Symbol` in a semantic model using an arena and a factory
-  * [ ] `MeaningSlot`
-    * [ ] `name()`
-    * [ ] `inherits()`
-    * [ ] `set_inherits()`
-    * [ ] `submeanings()`
-    * [ ] `methods()`
+* [x] Define `Symbol` in a semantic model using an arena and a factory
+  * [x] `LmtHost`
+  * [x] `MeaningSlot`
   * [x] `FieldSlot`
-  * [ ] `MethodSlot`
-    * [ ] `name()`
-    * [ ] `defined_in()`
-    * [ ] `attributes()`
-    * [ ] `override_logic_mapping(): SharedMap<MeaningSlot, OverrideLogicMapping>`
-  * [ ] `OverrideLogicMapping` structure
-    * [ ] `override_code()`
-    * [ ] `set_override_code()`
-    * [ ] `override_logic_mapping()`
+  * [x] `MethodSlot`
+  * [x] `OverrideLogicMapping` structure
 * [ ] Output `type ArenaName = Arena<__data__::Meaning>;`
 * [ ] 1. Traverse all meanings in a first pass
   * [ ] Create a `MeaningSlot`, setting the inherited type properly.
@@ -75,6 +64,10 @@ Steps after parsing:
   * [ ] 3.5 Traverse each method
     * [ ] Create a `MethodSlot` with the appropriate settings.
     * [ ] Contribute the method slot to the meaning.
+    * [ ] Check if the method has a `#[inheritdoc]` attribute; if it has one
+      * [ ] Remove it
+      * [ ] Lookup method in one of the base meanings
+      * [ ] Inherit documentation comments
     * [ ] For each `super.f(...)` call within the method's block
       * [ ] Lookup for a `f` method in the inherited meanings in descending order
       * [ ] If nothing found, report an error at that `super.f(...)` call; otherwise
