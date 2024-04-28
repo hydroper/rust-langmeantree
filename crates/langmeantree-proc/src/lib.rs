@@ -252,7 +252,37 @@ pub fn langmeantree(input: TokenStream) -> TokenStream {
 
     let mut host = LmtHost::new();
 
-    //
+    // # Validations
+
+    // 1. Ensure there is at least one meaning.
+
+    if meanings.is_empty() {
+        panic!("There must be at least one meaning.");
+    }
+
+    // 2. Ensure the first meaning inherits no other one.
+
+    if meanings[0].inherits.is_some() {
+        meanings[0].name.span().unwrap().error("First meaning must inherit no any other meaning.").emit();
+        return TokenStream::new();
+    }
+    let base_meaning_name = meanings[0].name.to_string();
+
+    // 3. Ensure all other meanings inherit another one.
+
+    for m in meanings[1..].iter() {
+        if m.inherits.is_none() {
+            m.name.span().unwrap().error("Meaning must inherit another meaning.").emit();
+            return TokenStream::new();
+        }
+    }
+
+    // # Processing steps
+
+    // 1. Output `type ArenaName = ::langmeantree::Arena<__data__::Meaning>;`
+    host.output.extend::<TokenStream>(quote! {
+        type #arena_type_name = ::langmeantree::Arena<__data__::#base_meaning_name>;
+    }.try_into().unwrap());
 
     host.output
 }

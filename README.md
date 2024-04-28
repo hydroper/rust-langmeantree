@@ -22,11 +22,12 @@ Steps after parsing:
   * [x] `FieldSlot`
   * [x] `MethodSlot`
   * [x] `OverrideLogicMapping` structure
-* [ ] 1. Output `type ArenaName = ::langmeantree::Arena<__data__::Meaning>;`
+* [x] 1. Output `type ArenaName = ::langmeantree::Arena<__data__::Meaning>;`
 * [ ] 2. Traverse all meanings in a first pass
   * [ ] Create a `MeaningSlot`, setting the inherited type properly.
   * [ ] If the inherited type failed to resolve, ignore that meaning (assuming the error was reported); otherwise
     * [ ] Contribute the meaning to the inherited type's list of submeanings.
+  * [ ] Contribute meaning to the set of known meanings
 * [ ] 3. Define the data module `__data__`
 * [ ] 4. Traverse each *meaning*
   * [ ] 4.1 Define the data structure `__data__::MeaningName`
