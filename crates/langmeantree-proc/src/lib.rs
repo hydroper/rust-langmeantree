@@ -34,8 +34,14 @@ use std::ops::Deref;
 use std::rc::{Rc, Weak};
 use by_address::ByAddress;
 
+/// Field name used for holding an enumeration of submeanings.
 const DATA_VARIANT_FIELD: &'static str = "__variant";
+
+/// Prefix used for enumerations of submeanings.
 const DATA_VARIANT_PREFIX: &'static str = "__variant_";
+
+/// Variant name used for indicating that no submeaning is instantiated.
+const DATA_VARIANT_NO_SUBMEANING: &'static str = "__NoSubmeaning";
 
 struct MeaningTree {
     arena_type_name: proc_macro2::TokenStream,
@@ -294,7 +300,7 @@ pub fn langmeantree(input: TokenStream) -> TokenStream {
             continue;
         };
 
-        let submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + &meaning.name();
+        let asc_meaning_list = meaning.asc_meaning_list();
 
         // 3.1. Write out the base data accessor
         //
@@ -311,7 +317,7 @@ pub fn langmeantree(input: TokenStream) -> TokenStream {
 
         // 3.2. Traverse each field.
         for field in meaning_node.fields.iter() {
-            ProcessingStep3_2().exec(&mut host, &meaning, field, &base_accessor, &submeaning_enum);
+            ProcessingStep3_2().exec(&mut host, &meaning, field, &base_accessor, &asc_meaning_list);
         }
     }
 

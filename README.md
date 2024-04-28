@@ -27,7 +27,7 @@ Steps after parsing:
 * [x] 2. Traverse all meanings in a first pass
 * [ ] 3. Traverse each meaning
   * [x] 3.1 Write out the base data accessor
-  * [ ] 3.2 Traverse each field (see below section 3.2)
+  * [x] 3.2 Traverse each field (see below section 3.2)
   * [ ] 3.3 Contribute a `#DATA_VARIANT_FIELD` field to `__data__::M` holding the enumeration of submeanings.
   * [ ] 3.4 Contribute a `#[non_exhaustive]` enumeration of submeanings whose name is `submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + meaning_name` at the `__data__` module.
   * [ ] 3.5. Define the data structure `__data__::M` at the `__data__` module output, containing all field output.
@@ -70,16 +70,6 @@ Steps after parsing:
   * [ ] 3.13 Output a `TryFrom<InheritedMeaning> for MeaningName` implementation (contravariant conversion)
 * [ ] 4. Output the `mod __data__ { use super::*; ... }` module with its respective contents
 
-### 3.1
-
-Given a meaning and a field:
-
-* [x] 1. Create a `FieldSlot`.
-* [x] 2. Contribute the field slot to the meaning slot.
-* [x] 3. Contribute a field to the `__data__::M` structure.
-* [ ] 4. Define accessors
-  * [ ] Perform pattern matching in `#base_accessor`
-
 ## Definition order
 
 Definition order is sensitive. Define submeanings after their inherited meanings while using the `struct` keyword.
@@ -109,8 +99,13 @@ langmeantree! {
         // Use "ref" for RefCell. RefCell is used for data types
         // such as String, Vec, HashMap, Rc, and so on.
         //
-        // fn y(&self) -> Ref<String>
-        // fn y_mut(&self) -> RefMut<String>
+        // Note that this will assume that the data type implements Clone,
+        // as the methods clone data on read.
+        //
+        // For semantic cases that need mutability, use a
+        // shared container that is cloned by reference.
+        //
+        // fn y(&self) -> String
         // fn set_y(&self, value: String) -> Self
         let ref y: String = "".into();
 

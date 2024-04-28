@@ -119,6 +119,16 @@ impl Symbol {
         }
     }
 
+    pub fn asc_meaning_list(&self) -> Vec<Symbol> {
+        let mut out = vec![self.clone()];
+        let mut m = self.inherits();
+        while let Some(m1) = m {
+            out.insert(0, m1.clone());
+            m = m1.inherits();
+        }
+        out
+    }
+
     pub fn submeanings(&self) -> SharedArray<Symbol> {
         match access!(self) {
             Symbol1::MeaningSlot(slot) => slot.submeanings.clone(),
