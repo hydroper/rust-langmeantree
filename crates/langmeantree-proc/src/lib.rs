@@ -10,6 +10,9 @@ use shared_map::*;
 mod symbol;
 use symbol::*;
 
+mod tree_semantics;
+use tree_semantics::*;
+
 // use std::iter::FromIterator;
 use proc_macro::TokenStream;
 // use proc_macro2::Span;
@@ -17,9 +20,16 @@ use quote::{quote, ToTokens};
 // use quote::{quote, quote_spanned};
 use syn::parse::{Parse, ParseBuffer, ParseStream, Result};
 use syn::punctuated::Punctuated;
-use syn::token::{Brace, Comma, Pub};
+use syn::token::{Brace, Comma};
 // use syn::spanned::Spanned;
 use syn::{parse_macro_input, Ident, Token, Path, Visibility, Attribute, Type, Expr, Generics, FnArg, Stmt, braced, WhereClause, parenthesized};
+
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::hash::Hash;
+use std::ops::Deref;
+use std::rc::{Rc, Weak};
+use by_address::ByAddress;
 
 fn parse_full_qualified_id(input: ParseStream) -> Result<Path> {
     Ok(Path::parse_mod_style(input)?)
@@ -27,7 +37,7 @@ fn parse_full_qualified_id(input: ParseStream) -> Result<Path> {
 
 struct MeaningTree {
     arena_type_name: proc_macro2::TokenStream,
-    meanings: Vec<Meaning>,
+    meanings: Vec<Rc<Meaning>>,
 }
 
 struct Meaning {
@@ -35,9 +45,9 @@ struct Meaning {
     visibility: Visibility,
     name: Ident,
     inherits: Option<Path>,
-    fields: Vec<MeaningField>,
+    fields: Vec<Rc<MeaningField>>,
     constructor: Option<MeaningConstructor>,
-    methods: Vec<MeaningMethod>,
+    methods: Vec<Rc<MeaningMethod>>,
 }
 
 struct MeaningField {
@@ -76,7 +86,7 @@ impl Parse for MeaningTree {
         let arena_type_name = parse_meaning_arena_type_name(input)?.to_token_stream();
         let mut meanings = vec![];
         while !input.is_empty() {
-            meanings.push(input.parse::<Meaning>()?);
+            meanings.push(Rc::new(input.parse::<Meaning>()?));
         }
         Ok(Self {
             arena_type_name,
@@ -102,22 +112,22 @@ impl Parse for Meaning {
             inherits = Some(Path::parse_mod_style(input)?);
         }
 
-        let mut fields: Vec<MeaningField> = vec![];
+        let mut fields: Vec<Rc<MeaningField>> = vec![];
         let mut constructor: Option<MeaningConstructor> = None;
-        let mut methods: Vec<MeaningMethod> = vec![];
+        let mut methods: Vec<Rc<MeaningMethod>> = vec![];
         let braced_content;
         let _ = braced!(braced_content in input);
 
         while !braced_content.is_empty() {
             if input.peek(Token![let]) {
-                fields.push(parse_meaning_field(input)?);
+                fields.push(Rc::new(parse_meaning_field(input)?));
             } else {
                 match parse_meaning_method(input, &name_str)? {
                     MeaningMethodOrConstructor::Constructor(ctor) => {
                         constructor = Some(ctor);
                     },
                     MeaningMethodOrConstructor::Method(m) => {
-                        methods.push(m);
+                        methods.push(Rc::new(m));
                     },
                 }
             }

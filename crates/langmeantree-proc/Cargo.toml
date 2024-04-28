@@ -13,6 +13,7 @@ description = "Tree structures"
 proc-macro = true
 
 [dependencies]
+by_address = "1.1.0"
 proc-macro2 = { version = "1", features = ["nightly"] }
 quote = "1"
 syn = { version = "2.0.38", features = ["full"] }

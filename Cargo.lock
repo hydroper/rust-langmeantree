@@ -20,6 +20,7 @@ dependencies = [
 name = "langmeantree-proc"
 version = "0.1.0"
 dependencies = [
+ "by_address",
  "proc-macro2",
  "quote",
  "syn",
