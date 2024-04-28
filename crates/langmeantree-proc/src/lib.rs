@@ -47,7 +47,7 @@ struct Meaning {
     attributes: Vec<Attribute>,
     visibility: Visibility,
     name: Ident,
-    inherits: Option<Path>,
+    inherits: Option<Ident>,
     fields: Vec<Rc<MeaningField>>,
     constructor: Option<MeaningConstructor>,
     methods: Vec<Rc<MeaningMethod>>,
@@ -109,10 +109,10 @@ impl Parse for Meaning {
         let name_str = name.to_string();
 
         // Inherits
-        let mut inherits: Option<Path> = None;
+        let mut inherits: Option<Ident> = None;
         if input.peek(Token![:]) {
             input.parse::<Token![:]>();
-            inherits = Some(Path::parse_mod_style(input)?);
+            inherits = Some(input.parse::<Ident>()?);
         }
 
         let mut fields: Vec<Rc<MeaningField>> = vec![];
