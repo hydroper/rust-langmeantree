@@ -295,9 +295,22 @@ pub fn langmeantree(input: TokenStream) -> TokenStream {
             continue;
         };
 
-        // 3.1 Traverse each field.
+        // 3.1. Write out the base data accessor
+        //
+        // For example, for the base meaning data type, this
+        // is always "self.0"; for a direct submeaning of the base
+        // data type, this is always "self.0.0".
+
+        let mut base_accessor = "self.0".to_owned();
+        let mut m1 = meaning.clone();
+        while let Some(m2) = m1.inherits() {
+            base_accessor.push_str(".0");
+            m1 = m2;
+        }
+
+        // 3.2. Traverse each field.
         for field in meaning_node.fields.iter() {
-            ProcessingStep3_1().exec(&mut host, &meaning, field);
+            ProcessingStep3_2().exec(&mut host, &meaning, field, &base_accessor);
         }
     }
 
