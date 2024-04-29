@@ -133,9 +133,9 @@ impl Parse for Meaning {
 
         while !braced_content.is_empty() {
             if input.peek(Token![let]) {
-                fields.push(Rc::new(parse_meaning_field(input)?));
+                fields.push(Rc::new(parse_meaning_field(&braced_content)?));
             } else {
-                match parse_meaning_method(input, &name_str)? {
+                match parse_meaning_method(&braced_content, &name_str)? {
                     MeaningMethodOrConstructor::Constructor(ctor) => {
                         constructor = Some(ctor);
                     },
