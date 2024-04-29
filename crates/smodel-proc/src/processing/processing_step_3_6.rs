@@ -79,7 +79,8 @@ impl ProcessingStep3_6 {
     fn contravariance(&self, host: &mut LmtHost, base_accessor: &str, base_meaning: &Symbol, submeaning: &Symbol) {
         let base_meaning_name = base_meaning.name();
         let submeaning_name = submeaning.name();
-        let m = self.match_contravariant(&submeaning.asc_meaning_list(), 0, &format!("{base_accessor}.upgrade().unwrap()"), base_accessor);
+        let base_accessor = base_accessor.replacen("self", "v", 1);
+        let m = self.match_contravariant(&submeaning.asc_meaning_list(), 0, &format!("{base_accessor}.upgrade().unwrap()"), &base_accessor);
 
         host.output.extend::<TokenStream>(quote! {
             impl TryFrom<#base_meaning_name> for #submeaning_name {

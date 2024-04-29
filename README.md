@@ -23,20 +23,12 @@ Steps after parsing:
 * [x] 2. Traverse all meanings in a first pass
 * [ ] 3. Traverse each meaning
   * [x] 3.1 Write out the base data accessor
-  * [x] 3.2 Traverse each field (see below section 3.2)
+  * [x] 3.2 Traverse each field
   * [x] 3.3 Contribute a `#DATA_VARIANT_FIELD` field to `__data__::M` holding the enumeration of submeanings.
   * [x] 3.4 Contribute a `#[non_exhaustive]` enumeration of submeanings whose name is `submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + meaning_name` at the `__data__` module.
   * [x] 3.5. Define the data structure `__data__::M` at the `__data__` module output, containing all field output.
   * [x] 3.6 Define the structure `M`
-  * [ ] 3.7 Define the constructor
-    * [ ] 3.7.1 Define the constructor *initializer* code as an instance `__sm__ctor()` method
-    * [ ] 3.7.2 Prepend an `arena: &MeaningArena` parameter to the constructor's input (not to the `__sm__ctor()` method).
-    * [ ] 3.7.3 At the constructor output code, let `meaning` be a complex `M2(M1(arena.allocate(__data__::M1 { ... })))` (notice the meaning layers) allocation initializing all meaning variants's fields with their default values.
-    * [ ] 3.7.4 If the meaning inherits another meaning
-      * [ ] 3.7.4.1 At the constructor output code, invoke `InheritedM::__sm__ctor(meaning, ...arguments)`, passing all `super(...)` arguments.
-    * [ ] 3.7.5 Contribute all constructor initializer code to the `__sm_ctor()` method.
-    * [ ] 3.7.6 Output a `meaning` return
-    * [ ] 3.7.7 Output the constructor as a static `new` method.
+  * [ ] 3.7 Define the constructor (see below section 3.7)
   * [ ] 3.8 Traverse each method
     * [ ] Create a `MethodSlot` with the appropriate settings.
     * [ ] Contribute the method slot to the meaning.
@@ -60,6 +52,17 @@ Steps after parsing:
   * [ ] 3.10 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
   * [ ] 3.11 Output the code of all methods to an `impl` block for the meaning data type.
 * [ ] 4. Output the `mod __data__ { use super::*; ... }` module with its respective contents
+
+#### 3.7 Constructor
+
+* [ ] 1. Define the constructor *initializer* code as an instance `__sm__ctor()` method
+* [ ] 2. Prepend an `arena: &MeaningArena` parameter to the constructor's input (not to the `__sm__ctor()` method).
+* [ ] 3. At the constructor output code, let `meaning` be a complex `M2(M1(arena.allocate(__data__::M1 { ... })))` (notice the meaning layers) allocation initializing all meaning variants's fields with their default values.
+* [ ] 4. If the meaning inherits another meaning
+  * [ ] 4.1. At the constructor output code, invoke `InheritedM::__sm__ctor(meaning, ...arguments)`, passing all `super(...)` arguments.
+* [ ] 5. Contribute all constructor initializer code to the `__sm_ctor()` method.
+* [ ] 6. Output a `meaning` return
+* [ ] 7. Output the constructor as a static `new` method.
 
 ## Definition order
 
