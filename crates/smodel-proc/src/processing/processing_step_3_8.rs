@@ -65,6 +65,9 @@ impl ProcessingStep3_8 {
         // Create a `MethodSlot` with the appropriate settings.
         let slot = host.factory.create_method_slot(name.to_string(), meaning.clone(), doc_attr);
 
+        // Map node to slot
+        host.semantics.set(&node, Some(slot.clone()));
+
         // Contribute the method slot to the meaning.
         meaning.methods().set(slot.name(), slot.clone());
 
@@ -91,13 +94,29 @@ impl ProcessingStep3_8 {
 
         // Define input argument list
         let input_args = convert_function_input_to_arguments(&inputs);
+
+        // Process super expressions
+        let statements = self.process_super_expression(node.statements.clone(), meaning, &slot);
+
+        // If the method is marked as "override"
+        //
+        // * Lookup for a method with the same name in one of the base meanings
+        // * Contribute "overriding" return call code to the respective
+        //   override logic mapping according to meaning inheritance.
+        if node.is_override {
+            if let Some(base_method) = meaning.lookup_method_in_base_meaning(&slot.name()) {
+                self.perform_override(&slot.name(), base_method.override_logic_mapping(), &base_method.defined_in(), meaning, &input_args);
+            } else {
+                name.span().unwrap().error(format!("Found no method '{}' in base.", slot.name())).emit();
+            }
+        }
     }
 
     fn begins_with_no_receiver(input: &Punctuated<FnArg, Comma>) -> bool {
         if let Some(first) = input.first() {
-            matches!(first, FnArg::Receiver(rec))
+            !(matches!(first, FnArg::Receiver(_)))
         } else {
-            false
+            true
         }
     }
 
@@ -219,5 +238,41 @@ impl ProcessingStep3_8 {
             }
         }
         output
+    }
+
+    fn perform_override(&self, method_name: &str, mut override_logic_mapping: SharedMap<Symbol, Rc<OverrideLogicMapping>>, base_meaning: &Symbol, target_meaning: &Symbol, input_args: &Punctuated<proc_macro2::TokenStream, Comma>) {
+        let meaning_list = target_meaning.asc_meaning_list();
+        let mut i = 0usize;
+        for m in meaning_list.iter() {
+            if m == base_meaning {
+                break;
+            }
+            i += 1;
+        }
+        for m in meaning_list[(i + 1)..(meaning_list.len() - 1)].iter() {
+            if let Some(old_mapping) = override_logic_mapping.get(m) {
+                override_logic_mapping = old_mapping.override_logic_mapping();
+            } else {
+                let new_mapping = Rc::new(OverrideLogicMapping::new());
+                override_logic_mapping.set(m.clone(), new_mapping.clone());
+                override_logic_mapping = new_mapping.override_logic_mapping();
+            }
+        }
+
+        // Generate layers
+        let mut layers = String::new();
+        let mut parens = 0usize;
+        for m in meaning_list[(i + 1)..].iter().rev() {
+            layers.push_str(&format!("{}(", m.name()));
+            parens += 1;
+        }
+        layers.push_str("self.clone()");
+        layers.push_str(&")".repeat(parens));
+
+        let new_mapping = Rc::new(OverrideLogicMapping::new());
+        new_mapping.set_override_code(Some(quote! {
+            return #layers.#method_name(#input_args);
+        }));
+        override_logic_mapping.set(target_meaning.clone(), new_mapping.clone());
     }
 }

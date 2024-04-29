@@ -273,7 +273,7 @@ struct MethodSlot1 {
 }
 
 pub struct OverrideLogicMapping {
-    override_code: RefCell<Option<proc_macro2::TokenTree>>,
+    override_code: RefCell<Option<proc_macro2::TokenStream>>,
     override_logic_mapping: SharedMap<Symbol, Rc<OverrideLogicMapping>>,
 }
 
@@ -286,12 +286,12 @@ impl OverrideLogicMapping {
     }
 
     /// Override code; generally a `return` statement with a semicolon.
-    pub fn override_code(&self) -> Option<proc_macro2::TokenTree> {
+    pub fn override_code(&self) -> Option<proc_macro2::TokenStream> {
         self.override_code.borrow().clone()
     }
 
     /// Sets override code; generally a `return` statement with a semicolon.
-    pub fn set_override_code(&self, code: Option<proc_macro2::TokenTree>) {
+    pub fn set_override_code(&self, code: Option<proc_macro2::TokenStream>) {
         self.override_code.replace(code);
     }
 

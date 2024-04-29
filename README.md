@@ -30,9 +30,12 @@ Steps after parsing:
   * [x] 3.6 Define the structure `M`
   * [x] 3.7 Define the constructor
   * [ ] 3.8 Traverse each method (see below section 3.8)
-  * [ ] 3.9 Contribute a `to::<T: TryInto<M>>()` method that uses `TryInto`
-  * [ ] 3.10 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
-  * [ ] 3.11 Output the code of all methods to an `impl` block for the meaning data type.
+  * [ ] 3.9 Traverse each method
+    * [ ] Skip if it is not mapped to an instance method slot.
+    * [ ] Contribute the method `#method_name` with prepended dynamic dispatch logic, invoking `self.#nondispatch_name(#input_args)` at the end of the method body, to the output
+  * [ ] 3.10 Contribute a `to::<T: TryInto<M>>()` method that uses `TryInto`
+  * [ ] 3.11 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
+  * [ ] 3.12 Output the code of all methods to an `impl` block for the meaning data type.
 * [ ] 4. Output the `mod #DATA { use super::*; ... }` module with its respective contents
 
 #### 3.8 For each method
@@ -44,13 +47,9 @@ Steps after parsing:
   * [x] Lookup method in one of the base meanings
   * [x] Inherit documentation comments
 * [x] Define `nondispatch_name` as nondispatch prefix plus method name.
-* [x] For each `super.f(...)` call within the method's block
-* [ ] If the method is marked as `override`
-  * [ ] Lookup for a method with the same name in the inherited meanings in descending order
-    * [ ] If nothing found, report an error at the method's identifier; otherwise
-      * [ ] Contribute "overriding" return call code to the respective override logic mapping according to meaning inheritance
+* [x] Process super expressions
+* [x] Perform overriding
 * [ ] Contribute the internal method `#nondispatch_name` without dynamic dispatch to the output
-* [ ] Contribute the method `#method_name` with prepended dynamic dispatch logic, invoking `self.#nondispatch_name(#input_args)` at the end of the method body, to the output
 
 ## Definition order
 
