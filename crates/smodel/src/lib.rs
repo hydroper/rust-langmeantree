@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::{Rc, Weak}};
 use std::error::Error;
 use std::fmt::{Debug, Display};
 
-pub use langmeantree_proc::langmeantree;
+pub use smodel_proc::smodel;
 
 pub struct Arena<T> {
     data: RefCell<Vec<Rc<T>>>,

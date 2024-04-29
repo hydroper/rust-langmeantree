@@ -1,8 +1,6 @@
-# langmeantree
+# SModel
 
-The `langmeantree` crate provides an intuitive way to describe meanings of a language using dynamic dispatches and hierarchy definitions using an arena.
-
-`langmeantree` may be used for language compiler codebases for representing meanings, also referred to as *symbol* references.
+SModel (Semantic Modeling) for Rust provides an intuitive way to describe semantic symbols of a language using dynamic dispatches and hierarchy definitions using an arena that allows for circular references.
 
 *Note: this crate is not yet implemented.*
 
@@ -23,7 +21,7 @@ Steps after parsing:
   * [x] `FieldSlot`
   * [x] `MethodSlot`
   * [x] `OverrideLogicMapping` structure
-* [x] 1. Output `type ArenaName = ::langmeantree::Arena<__data__::Meaning>;`
+* [x] 1. Output `type ArenaName = ::smodel::Arena<__data__::Meaning>;`
 * [x] 2. Traverse all meanings in a first pass
 * [ ] 3. Traverse each meaning
   * [x] 3.1 Write out the base data accessor
@@ -34,12 +32,12 @@ Steps after parsing:
   * [x] 3.6 Define the structure `M`
     * [ ] Finish contravariance implementation
   * [ ] 3.7 Define the constructor
-    * [ ] 3.7.1 Define the constructor *initializer* code as an instance `__lmt__ctor()` method
-    * [ ] 3.7.2 Prepend an `arena: &MeaningArena` parameter to the constructor's input (not to the `__lmt__ctor()` method).
-    * [ ] 3.7.3 At the constructor output code, let `meaning` be a complex `MeaningName(TopLevelMeaning(arena.allocate(__data__::TopLevelMeaning { ... })))` (notice the meaning layers) allocation initializing all meaning variants's fields with their default values.
+    * [ ] 3.7.1 Define the constructor *initializer* code as an instance `__sm__ctor()` method
+    * [ ] 3.7.2 Prepend an `arena: &MeaningArena` parameter to the constructor's input (not to the `__sm__ctor()` method).
+    * [ ] 3.7.3 At the constructor output code, let `meaning` be a complex `M2(M1(arena.allocate(__data__::M1 { ... })))` (notice the meaning layers) allocation initializing all meaning variants's fields with their default values.
     * [ ] 3.7.4 If the meaning inherits another meaning
-      * [ ] 3.7.4.1 At the constructor output code, invoke `InheritedMeaning::__lmt__ctor(meaning, ...arguments)`, passing all `super(...)` arguments.
-    * [ ] 3.7.5 Contribute all constructor initializer code to the `__lmt_ctor()` method.
+      * [ ] 3.7.4.1 At the constructor output code, invoke `InheritedM::__sm__ctor(meaning, ...arguments)`, passing all `super(...)` arguments.
+    * [ ] 3.7.5 Contribute all constructor initializer code to the `__sm_ctor()` method.
     * [ ] 3.7.6 Output a `meaning` return
     * [ ] 3.7.7 Output the constructor as a static `new` method.
   * [ ] 3.8 Traverse each method
@@ -52,15 +50,15 @@ Steps after parsing:
     * [ ] For each `super.f(...)` call within the method's block
       * [ ] Lookup for a `f` method in the inherited meanings in descending order
       * [ ] If nothing found, report an error at that `super.f(...)` call; otherwise
-        * [ ] Replace `super.f(...)` by `InheritedMeaning::__lmt_nondispatch_f(self, ...)`
+        * [ ] Replace `super.f(...)` by `InheritedM::__sm_nondispatch_f(self, ...)`
     * [ ] Parse the modified method's block as a statement sequence
     * [ ] If the method is marked as `override`
-      * [ ] Lookup for a method with the same name in the inherited meanings in descending order
+      * [ ] Lookup for a method with the smodele name in the inherited meanings in descending order
         * [ ] If nothing found, report an error at the method's identifier; otherwise
           * [ ] Contribute "overriding" return call code to the respective override logic mapping according to meaning inheritance
-    * [ ] Contribute the method `__lmt_nondispatch_m` without dynamic dispatch to the output
-    * [ ] Contribute the method `m` with dynamic dispatch, invoking `self.__lmt_nondispatch_m()` at the end of the method body, to the output
-  * [ ] 3.9 Contribute a `to::<T: TryInto<MeaningName>>()` method that uses `TryInto`
+    * [ ] Contribute the method `__sm_nondispatch_m` without dynamic dispatch to the output
+    * [ ] Contribute the method `m` with dynamic dispatch, invoking `self.__sm_nondispatch_m()` at the end of the method body, to the output
+  * [ ] 3.9 Contribute a `to::<T: TryInto<M>>()` method that uses `TryInto`
   * [ ] 3.10 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
   * [ ] 3.11 Output the code of all methods to an `impl` block for the meaning data type.
 * [ ] 4. Output the `mod __data__ { use super::*; ... }` module with its respective contents
@@ -74,9 +72,9 @@ If you define in `struct`s in any order, you may get a compile-time error; lucki
 ## Example
 
 ```rust
-use langmeantree::langmeantree;
+use smodel::smodel;
 
-langmeantree! {
+smodel! {
     type Arena = MeaningArena;
 
     struct Meaning {
@@ -145,7 +143,7 @@ fn main() {
 
 Fields are always private to the meaning, therefore there are no attributes; the field definition always starts with the `let` keyword, without a RustDoc comment.
 
-It is recommended for fields to always start with a underscore `_`, and consequently using accesses such as `__x()`, `__x_mut()`, or `set__x(v)`.
+It is recommended for fields to always start with a underscore `_`, and consequently using accesses such as `__x()`, or `set__x(v)`.
 
 ## Submeanings
 

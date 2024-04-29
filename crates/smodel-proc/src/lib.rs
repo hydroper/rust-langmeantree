@@ -250,7 +250,7 @@ fn parse_meaning_arena_type_name(input: ParseStream) -> Result<Path> {
 }
 
 #[proc_macro]
-pub fn langmeantree(input: TokenStream) -> TokenStream {
+pub fn smodel(input: TokenStream) -> TokenStream {
     let MeaningTree {
         arena_type_name, meanings
     } = parse_macro_input!(input as MeaningTree);
@@ -286,7 +286,7 @@ pub fn langmeantree(input: TokenStream) -> TokenStream {
 
     // 1. Output the arena type.
     host.output.extend::<TokenStream>(quote! {
-        type #arena_type_name = ::langmeantree::Arena<__data__::#base_meaning_name>;
+        type #arena_type_name = ::smodel::Arena<__data__::#base_meaning_name>;
     }.try_into().unwrap());
 
     // 2. Traverse each meaning in a first pass.
