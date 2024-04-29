@@ -1,6 +1,5 @@
 use std::{cell::RefCell, rc::{Rc, Weak}};
-use std::error::Error;
-use std::fmt::{Debug, Display};
+use std::fmt::Debug;
 
 pub use smodel_proc::smodel;
 
