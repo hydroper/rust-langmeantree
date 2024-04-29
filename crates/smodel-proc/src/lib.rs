@@ -87,7 +87,8 @@ struct MeaningMethod {
     name: Ident,
     generics: Generics,
     inputs: Punctuated<FnArg, Comma>,
-    statements: Brace,
+    result_type: Option<Type>,
+    statements: proc_macro2::TokenStream,
 }
 
 impl Parse for MeaningTree {
@@ -199,12 +200,20 @@ fn parse_meaning_method(input: ParseStream, meaning_name: &str) -> Result<Meanin
     parenthesized!(parens_content in input);
     let inputs = parens_content.parse_terminated(FnArg::parse, Comma)?;
 
+    let result_type: Option<Type> = if !is_constructor && input.peek(Token![->]) {
+        input.parse::<Token![->]>();
+        Some(input.parse::<Type>()?)
+    } else {
+        None
+    };
+
     generics.where_clause = if input.peek(Token![where]) { Some(input.parse::<WhereClause>()?) } else { None };
 
     let braced_content;
-    let brace_token = braced!(braced_content in input);
+    let _ = braced!(braced_content in input);
 
     if !is_constructor {
+        let statements = braced_content.parse::<proc_macro2::TokenStream>()?;
         return Ok(MeaningMethodOrConstructor::Method(MeaningMethod {
             attributes: RefCell::new(attributes),
             visibility,
@@ -212,7 +221,8 @@ fn parse_meaning_method(input: ParseStream, meaning_name: &str) -> Result<Meanin
             name: id,
             generics,
             inputs,
-            statements: brace_token,
+            result_type,
+            statements,
         }));
     }
 

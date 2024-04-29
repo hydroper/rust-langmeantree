@@ -37,9 +37,6 @@ Steps after parsing:
 
 #### 3.8 For each method
 
-* [ ] If it does not begin with a `self` receiver
-  * Report error at the receiver parameter
-  * Ignore method
 * [ ] Create a `MethodSlot` with the appropriate settings.
 * [ ] Contribute the method slot to the meaning.
 * [ ] Check if the method has a `#[inheritdoc]` attribute; if it has one
