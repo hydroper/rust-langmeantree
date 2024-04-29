@@ -370,7 +370,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         });
 
         // 3.6. Define the structure M
-        ProcessingStep3_6().exec(&mut host, &meaning, &base_accessor);
+        ProcessingStep3_6().exec(&mut host, &meaning_node, &meaning, &base_accessor);
 
         // 3.7. Define the constructor
         ProcessingStep3_7().exec(&mut host, meaning_node.constructor.as_ref(), &meaning, &asc_meaning_list, &arena_type_name.to_string());
@@ -416,8 +416,6 @@ pub fn smodel(input: TokenStream) -> TokenStream {
             #data_output
         }
     }.try_into().unwrap());
-
-    todo!();
 
     // 5. Return output.
 

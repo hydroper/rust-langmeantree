@@ -3,8 +3,10 @@ use crate::*;
 pub struct ProcessingStep3_6();
 
 impl ProcessingStep3_6 {
-    pub fn exec(&self, host: &mut SModelHost, meaning: &Symbol, base_accessor: &str) {
+    pub fn exec(&self, host: &mut SModelHost, node: &Rc<Meaning>, meaning: &Symbol, base_accessor: &str) {
         let meaning_name = meaning.name();
+        let attributes = node.attributes.clone();
+        let visi = node.visibility.clone();
 
         // Define the structure M, as in
         //
@@ -24,8 +26,9 @@ impl ProcessingStep3_6 {
         if let Some(inherits) = meaning.inherits() {
             let inherited_name = inherits.name();
             host.output.extend::<TokenStream>(quote! {
+                #(#attributes)*
                 #[derive(Clone, PartialEq, Hash)]
-                pub struct #meaning_name(#inherited_name);
+                #visi struct #meaning_name(#inherited_name);
 
                 impl ::std::ops::Deref for #meaning_name {
                     type Target = #inherited_name;
@@ -36,8 +39,9 @@ impl ProcessingStep3_6 {
             }.try_into().unwrap());
         } else {
             host.output.extend::<TokenStream>(quote! {
+                #(#attributes)*
                 #[derive(Clone)]
-                pub struct #meaning_name(Weak<#DATA::#meaning_name>);
+                #visi struct #meaning_name(Weak<#DATA::#meaning_name>);
 
                 impl PartialEq for #meaning_name {
                     fn eq(&self, other: &Self) -> bool {
