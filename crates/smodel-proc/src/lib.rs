@@ -11,6 +11,7 @@ mod symbol;
 use symbol::*;
 
 mod tree_semantics;
+use syn::spanned::Spanned;
 use tree_semantics::*;
 
 mod processing;
@@ -25,7 +26,7 @@ use syn::parse::{Parse, ParseStream, Result};
 use syn::punctuated::Punctuated;
 use syn::token::{Brace, Comma};
 // use syn::spanned::Spanned;
-use syn::{parse_macro_input, Ident, Token, Path, Visibility, Attribute, Type, Expr, Generics, FnArg, Stmt, braced, WhereClause, parenthesized};
+use syn::{braced, parenthesized, parse_macro_input, Attribute, Expr, FnArg, Generics, Ident, Pat, Path, Stmt, Token, Type, Visibility, WhereClause};
 
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -335,7 +336,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         let mut variants: Vec<String> = vec![];
         for submeaning in meaning.submeanings().iter() {
             let sn = submeaning.name();
-            variants.push(format!("{sn}(::std::rc::Rc<__data__::{sn}>)"));
+            variants.push(format!("{sn}(::std::rc::Rc<{sn}>)"));
         }
         host.data_output.extend::<TokenStream>(quote! {
             #[non_exhaustive]
@@ -369,4 +370,24 @@ pub fn smodel(input: TokenStream) -> TokenStream {
     // 5. Return output.
 
     host.output
+}
+
+fn convert_function_input_to_arguments(input: &Punctuated<FnArg, Comma>) -> Punctuated<proc_macro2::TokenStream, Comma> {
+    let mut out = Punctuated::<proc_macro2::TokenStream, Comma>::new();
+    for arg in input.iter() {
+        if let FnArg::Receiver(_) = arg {
+            arg.span().unwrap().error("Unexpected receiver.").emit();
+            continue;
+        } else {
+            let FnArg::Typed(pt) = arg else {
+                panic!();
+            };
+            let Pat::Ident(id) = pt.pat.as_ref() else {
+                pt.pat.span().unwrap().error("Pattern must be an identifier.").emit();
+                continue;
+            };
+            out.push(id.to_token_stream());
+        }
+    }
+    out
 }

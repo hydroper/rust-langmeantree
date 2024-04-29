@@ -31,9 +31,40 @@ impl ProcessingStep3_7 {
         // (notice the meaning layers) allocation initializing all meaning variants's fields
         // with their default values.
         let initlayer1 = self.init_data(asc_meaning_list, 0);
-        let initlayer2 = Symbol::create_layers_over_weak_root(&format!("__arena.allocate({})", initlayer1.to_string()), asc_meaning_list);
+        let initlayer2 = Symbol::create_layers_over_weak_root(&format!("arena.allocate({})", initlayer1.to_string()), asc_meaning_list);
         m_new_out.extend::<TokenStream>(quote! {
             let this = #initlayer2;
+        }.try_into().unwrap());
+
+        // If the meaning inherits another meaning:
+        //
+        // * At `M::new`, invoke `InheritedM::#CTOR_INIT_NAME(&this.0, ...super_arguments)`,
+        //   passing all `super(...)` arguments.
+        if let Some(inherited_m) = meaning.inherits() {
+            let inherited_m_name = inherited_m.name();
+            let super_arguments = node.map(|node| node.super_arguments.clone()).unwrap_or(Punctuated::new());
+            m_new_out.extend::<TokenStream>(quote! {
+                #inherited_m_name::#CTOR_INIT_NAME(&this.0, #super_arguments);
+            }.try_into().unwrap());
+        }
+
+        // * Output a `this.#CTOR_INIT_NAME(...arguments);` call to `M::new`.
+        // * Output a `this` return to `M::new`.
+        let input_args = convert_function_input_to_arguments(&input);
+        m_new_out.extend::<TokenStream>(quote! {
+            this.#CTOR_INIT_NAME(#input_args);
+            this
+        }.try_into().unwrap());
+
+        // Output the constructor as a static `new` method (`M::new`) with
+        // a prepended `arena: &#arena_type_name` parameter.
+
+        let m_new_out: proc_macro2::TokenStream = m_new_out.into();
+
+        meaning.method_output().borrow_mut().extend::<TokenStream>(quote! {
+            pub fn new #(#type_params)*(arena: &#arena_type_name, #input) -> Self #where_clause {
+                #m_new_out
+            }
         }.try_into().unwrap());
     }
 
