@@ -8,7 +8,10 @@ SModel (Semantic Modeling) for Rust provides an intuitive way to describe semant
 
 Reference links:
 
+<!--
 - https://github.com/hydroper/rust-class/blob/master/crates/oop_inheritance_proc/src/lib.rs
+-->
+
 - https://docs.rs/syn/latest/syn/
 - https://docs.rs/proc-macro2/latest/proc_macro2/
 - https://docs.rs/quote/latest/quote/
