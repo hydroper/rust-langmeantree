@@ -47,7 +47,7 @@ Steps after parsing:
 * [ ] For each `super.f(...)` call within the method's block
   * [ ] Lookup for a `f` method in the inherited meanings in descending order
   * [ ] If nothing found, report an error at that `super.f(...)` call; otherwise
-    * [ ] Let `base` be `self.clone()` surrounded by each submeaning's structure in the correct order.
+    * [ ] Let `base` be `self` followed by `n = delta_of_descending_list_until_base_meaning` (where `base_meaning` is the base found method's `.defined_in()` call) repeats of `.0`
     * [ ] Replace `super.f(...)` by `InheritedM::#nondispatch_name(#base, ...)` where `...` is `convert_function_input_to_arguments(&inputs)`
 * [ ] Parse the modified method's block as a statement sequence
 * [ ] If the method is marked as `override`
