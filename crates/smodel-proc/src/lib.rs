@@ -24,7 +24,7 @@ use quote::{quote, ToTokens};
 // use quote::{quote, quote_spanned};
 use syn::parse::{Parse, ParseStream, Result};
 use syn::punctuated::Punctuated;
-use syn::token::{Brace, Comma};
+use syn::token::Comma;
 // use syn::spanned::Spanned;
 use syn::{braced, parenthesized, parse_macro_input, Attribute, Expr, FnArg, Generics, Ident, Pat, Path, Stmt, Token, Type, Visibility, WhereClause};
 

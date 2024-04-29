@@ -120,4 +120,70 @@ impl ProcessingStep3_8 {
             false
         }
     }
+
+    fn process_super_expression(&self, input: proc_macro2::TokenStream, meaning: &Symbol, method_slot: &Symbol) -> proc_macro2::TokenStream {
+        let mut input = input.into_iter();
+        let mut output = proc_macro2::TokenStream::new();
+        while let Some(token1) = input.next() {
+            match &token1 {
+                proc_macro2::TokenTree::Ident(id) => {
+                    if id.to_string() != "super" {
+                        output.extend([token1.clone()]);
+                        continue;
+                    }
+                    let Some(token2) = input.next() else {
+                        output.extend([token1.clone()]);
+                        continue;
+                    };
+                    let proc_macro2::TokenTree::Punct(p) = &token2 else {
+                        output.extend([token1.clone()]);
+                        output.extend([token2.clone()]);
+                        continue;
+                    };
+                    if p.to_string() != "." {
+                        output.extend([token1.clone()]);
+                        output.extend([token2.clone()]);
+                        continue;
+                    }
+                    let Some(token3) = input.next() else {
+                        output.extend([token1.clone()]);
+                        output.extend([token2.clone()]);
+                        continue;
+                    };
+                    let proc_macro2::TokenTree::Ident(id) = &token3 else {
+                        output.extend([token1.clone()]);
+                        output.extend([token2.clone()]);
+                        output.extend([token3.clone()]);
+                        continue;
+                    };
+                    let Some(token4) = input.next() else {
+                        output.extend([token1.clone()]);
+                        output.extend([token2.clone()]);
+                        output.extend([token3.clone()]);
+                        continue;
+                    };
+                    let proc_macro2::TokenTree::Group(g) = &token4 else {
+                        output.extend([token1.clone()]);
+                        output.extend([token2.clone()]);
+                        output.extend([token3.clone()]);
+                        output.extend([token4.clone()]);
+                        continue;
+                    };
+                    if g.delimiter() != proc_macro2::Delimiter::Parenthesis {
+                        output.extend([token1.clone()]);
+                        output.extend([token2.clone()]);
+                        output.extend([token3.clone()]);
+                        output.extend([token4.clone()]);
+                        continue;
+                    }
+
+                    // Found super expression
+                },
+                _ => {
+                    output.extend([token1.clone()]);
+                },
+            }
+        }
+        output
+    }
 }

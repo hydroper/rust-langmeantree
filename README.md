@@ -49,7 +49,6 @@ Steps after parsing:
   * [ ] If nothing found, report an error at that `super.f(...)` call; otherwise
     * [ ] Let `base` be `self` followed by `n = delta_of_descending_list_until_base_meaning` (where `base_meaning` is the base found method's `.defined_in()` call) repeats of `.0`
     * [ ] Replace `super.f(...)` by `InheritedM::#nondispatch_name(#base, ...)` where `...` is `convert_function_input_to_arguments(&inputs)`
-* [ ] Parse the modified method's block as a statement sequence
 * [ ] If the method is marked as `override`
   * [ ] Lookup for a method with the same name in the inherited meanings in descending order
     * [ ] If nothing found, report an error at the method's identifier; otherwise
@@ -61,7 +60,7 @@ Steps after parsing:
 
 Definition order is sensitive. Define submeanings after their inherited meanings while using the `struct` keyword.
 
-If you define in `struct`s in any order, you may get a compile-time error; luckily, it is easy to identify these cases as structures that were failed to be processed are ignored.
+If you define `struct`s in any order, you may get a compile-time error; luckily, it is easy to identify these cases as structures that were failed to be processed are ignored.
 
 ## Example
 
