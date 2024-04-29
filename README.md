@@ -19,11 +19,6 @@ Reference links:
 Steps after parsing:
 
 * [x] Define `Symbol` in a semantic model using an arena and a factory
-  * [x] `LmtHost`
-  * [x] `MeaningSlot`
-  * [x] `FieldSlot`
-  * [x] `MethodSlot`
-  * [x] `OverrideLogicMapping` structure
 * [x] 1. Output `type ArenaName = ::smodel::Arena<__data__::Meaning>;`
 * [x] 2. Traverse all meanings in a first pass
 * [ ] 3. Traverse each meaning
