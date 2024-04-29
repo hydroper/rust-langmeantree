@@ -19,21 +19,21 @@ Reference links:
 Steps after parsing:
 
 * [x] Define `Symbol` in a semantic model using an arena and a factory
-* [x] 1. Output `type ArenaName = ::smodel::Arena<__data__::Meaning>;`
+* [x] 1. Output `type ArenaName = ::smodel::Arena<#DATA::Meaning>;`
 * [x] 2. Traverse all meanings in a first pass
 * [ ] 3. Traverse each meaning
   * [x] 3.1 Write out the base data accessor
   * [x] 3.2 Traverse each field
-  * [x] 3.3 Contribute a `#DATA_VARIANT_FIELD` field to `__data__::M` holding the enumeration of submeanings.
-  * [x] 3.4 Contribute a `#[non_exhaustive]` enumeration of submeanings whose name is `submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + meaning_name` at the `__data__` module.
-  * [x] 3.5. Define the data structure `__data__::M` at the `__data__` module output, containing all field output.
+  * [x] 3.3 Contribute a `#DATA_VARIANT_FIELD` field to `#DATA::M` holding the enumeration of submeanings.
+  * [x] 3.4 Contribute a `#[non_exhaustive]` enumeration of submeanings whose name is `submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + meaning_name` at the `#DATA` module.
+  * [x] 3.5. Define the data structure `#DATA::M` at the `#DATA` module output, containing all field output.
   * [x] 3.6 Define the structure `M`
   * [x] 3.7 Define the constructor
   * [ ] 3.8 Traverse each method (see below section 3.8)
   * [ ] 3.9 Contribute a `to::<T: TryInto<M>>()` method that uses `TryInto`
   * [ ] 3.10 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
   * [ ] 3.11 Output the code of all methods to an `impl` block for the meaning data type.
-* [ ] 4. Output the `mod __data__ { use super::*; ... }` module with its respective contents
+* [ ] 4. Output the `mod #DATA { use super::*; ... }` module with its respective contents
 
 #### 3.8 For each method
 

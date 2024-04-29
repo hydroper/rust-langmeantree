@@ -35,6 +35,9 @@ use std::ops::Deref;
 use std::rc::{Rc, Weak};
 use by_address::ByAddress;
 
+/// Data module name.
+const DATA: &'static str = "__data__";
+
 /// Field name used for holding an enumeration of submeanings.
 const DATA_VARIANT_FIELD: &'static str = "__variant";
 
@@ -297,7 +300,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
     // 1. Output the arena type.
     host.output.extend::<TokenStream>(quote! {
-        type #arena_type_name = ::smodel::Arena<__data__::#base_meaning_name>;
+        type #arena_type_name = ::smodel::Arena<#DATA::#base_meaning_name>;
     }.try_into().unwrap());
 
     // 2. Traverse each meaning in a first pass.
@@ -317,7 +320,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
         // 3.1. Write out the base data accessor
         //
-        // A `Weak<__data__::FirstM>` value.
+        // A `Weak<#DATA::FirstM>` value.
         //
         // For example, for the base meaning data type, this
         // is always "self.0"; for a direct submeaning of the base
@@ -335,14 +338,14 @@ pub fn smodel(input: TokenStream) -> TokenStream {
             ProcessingStep3_2().exec(&mut host, &meaning, field, &base_accessor, &asc_meaning_list, &mut field_output);
         }
 
-        // 3.3. Contribute a #DATA_VARIANT_FIELD field to __data__::M
+        // 3.3. Contribute a #DATA_VARIANT_FIELD field to #DATA::M
         // holding the enumeration of submeanings.
         let submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + &meaning_name;
         field_output.extend::<TokenStream>(quote! {
             pub #DATA_VARIANT_FIELD: #submeaning_enum,
         }.try_into().unwrap());
 
-        // 3.4. Contribute a #[non_exhaustive] enumeration of submeanings at the `__data__` module.
+        // 3.4. Contribute a #[non_exhaustive] enumeration of submeanings at the `#DATA` module.
         let mut variants: Vec<String> = vec![];
         for submeaning in meaning.submeanings().iter() {
             let sn = submeaning.name();
@@ -356,7 +359,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
             }
         }.try_into().unwrap());
 
-        // 3.5. Define the data structure __data__::M at the __data__ module output,
+        // 3.5. Define the data structure #DATA::M at the #DATA module output,
         // containing all field output.
         let field_output = field_output.to_string();
         host.data_output.extend::<TokenStream>(quote! {

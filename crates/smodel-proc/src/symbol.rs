@@ -128,11 +128,11 @@ impl Symbol {
         out
     }
 
-    /// Returns `MN(M2(M1(...)))` layers over a root `Weak<__data__::FirstM>` value.
+    /// Returns `MN(M2(M1(...)))` layers over a root `Weak<#DATA::FirstM>` value.
     /// 
     /// Parameters:
     /// 
-    /// * `base`: A `Weak<__data__::FirstM>` value.
+    /// * `base`: A `Weak<#DATA::FirstM>` value.
     pub fn create_layers_over_weak_root(base: &str, asc_meaning_list: &[Symbol]) -> String {
         let mut layers = String::new();
         let mut parens = 0usize;

@@ -15,7 +15,7 @@ impl ProcessingStep3_2 {
             meaning.fields().set(slot.name(), slot.clone());
         }
 
-        // 3. Contribute a field to the __data__::M structure.
+        // 3. Contribute a field to the #DATA::M structure.
         let field_name = slot.name();
         let field_type = slot.field_type();
         if slot.is_ref() {
@@ -58,7 +58,7 @@ impl ProcessingStep3_2 {
         }
     }
 
-    /// Matches a field. `base` is assumed to be a `Rc<__data__::M>` value.
+    /// Matches a field. `base` is assumed to be a `Rc<#DATA::M>` value.
     fn match_field(&self, asc_meaning_list: &[Symbol], meaning_index: usize, base: &str, field_name: &str) -> String {
         let inherited = if asc_meaning_list.len() - meaning_index == 1 {
             None
@@ -70,7 +70,7 @@ impl ProcessingStep3_2 {
         let Some(inherited) = meaning.inherits() else {
             return format!("{}.{}", base, field_name);
         };
-        format!("(if __data__::{}::{}(o) = &{base}.{DATA_VARIANT_FIELD} {{ {} }} else {{ panic!() }})",
+        format!("(if {DATA}::{}::{}(o) = &{base}.{DATA_VARIANT_FIELD} {{ {} }} else {{ panic!() }})",
             DATA_VARIANT_PREFIX.to_owned() + &inherited.name(),
             meaning.name(),
             self.match_field(asc_meaning_list, meaning_index + 1, "o", field_name))

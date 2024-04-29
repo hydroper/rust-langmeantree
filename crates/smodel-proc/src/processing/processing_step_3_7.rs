@@ -30,7 +30,7 @@ impl ProcessingStep3_7 {
         // `M::new` output
         let mut m_new_out = TokenStream::new();
 
-        // At `M::new`, let `this` be a complex `M2(M1(__arena.allocate(__data__::M1 { ... })))`
+        // At `M::new`, let `this` be a complex `M2(M1(__arena.allocate(#DATA::M1 { ... })))`
         // (notice the meaning layers) allocation initializing all meaning variants's fields
         // with their default values.
         let initlayer1 = self.init_data(asc_meaning_list, 0);
@@ -82,7 +82,7 @@ impl ProcessingStep3_7 {
                 #name: #fv,
             });
         }
-        let submeaning_enum = format!("__data__::{DATA_VARIANT_PREFIX}{meaning_name}");
+        let submeaning_enum = format!("{DATA}::{DATA_VARIANT_PREFIX}{meaning_name}");
         let variant = if meaning_index + 1 < asc_meaning_list.len() {
             let next_m = asc_meaning_list[meaning_index + 1].name();
             let i = self.init_data(asc_meaning_list, meaning_index + 1);
@@ -91,7 +91,7 @@ impl ProcessingStep3_7 {
             quote! { #submeaning_enum::#DATA_VARIANT_NO_SUBMEANING }
         };
         quote! {
-            __data__::#meaning_name {
+            #DATA::#meaning_name {
                 #fields
                 #DATA_VARIANT_FIELD: #variant
             }

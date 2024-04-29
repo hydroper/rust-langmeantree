@@ -10,7 +10,7 @@ impl ProcessingStep3_6 {
         //
         // ```
         // #[derive(Clone)]
-        // struct M(Weak<__data__::M>);
+        // struct M(Weak<#DATA::M>);
         // ```
         //
         // or as in:
@@ -37,7 +37,7 @@ impl ProcessingStep3_6 {
         } else {
             host.output.extend::<TokenStream>(quote! {
                 #[derive(Clone)]
-                pub struct #meaning_name(Weak<__data__::#meaning_name>);
+                pub struct #meaning_name(Weak<#DATA::#meaning_name>);
 
                 impl PartialEq for #meaning_name {
                     fn eq(&self, other: &Self) -> bool {
@@ -94,8 +94,8 @@ impl ProcessingStep3_6 {
 
     /// Matches a contravariant meaning.
     /// 
-    /// * `base` is assumed to be a `Rc<__data__::M>` value.
-    /// * `original_base` is assumed to be a `Weak<__data__::FirstM>` value.
+    /// * `base` is assumed to be a `Rc<#DATA::M>` value.
+    /// * `original_base` is assumed to be a `Weak<#DATA::FirstM>` value.
     fn match_contravariant(&self, asc_meaning_list: &[Symbol], meaning_index: usize, base: &str, original_base: &str) -> String {
         let inherited = if asc_meaning_list.len() - meaning_index == 1 {
             None
@@ -107,7 +107,7 @@ impl ProcessingStep3_6 {
         let Some(inherited) = meaning.inherits() else {
             return Symbol::create_layers_over_weak_root(original_base, asc_meaning_list);
         };
-        format!("(if __data__::{}::{}(_o) = &{base}.{DATA_VARIANT_FIELD} {{ {} }} else {{ Err(::smodel::SModelError::Contravariant) }})",
+        format!("(if {DATA}::{}::{}(_o) = &{base}.{DATA_VARIANT_FIELD} {{ {} }} else {{ Err(::smodel::SModelError::Contravariant) }})",
             DATA_VARIANT_PREFIX.to_owned() + &inherited.name(),
             meaning.name(),
             self.match_contravariant(asc_meaning_list, meaning_index + 1, "_o", original_base))
