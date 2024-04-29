@@ -377,7 +377,12 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
         // 3.8. Traverse each method
         for method in meaning_node.methods.iter() {
-            ProcessingStep3_8().exec(&mut host, method, &meaning, &base_accessor, &asc_meaning_list);
+            ProcessingStep3_8().exec(&mut host, method, &meaning);
+        }
+
+        // 3.9. Traverse each method
+        for method in meaning_node.methods.iter() {
+            ProcessingStep3_9().exec(&mut host, method, &meaning, &base_accessor, &asc_meaning_list);
         }
     }
 

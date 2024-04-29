@@ -1,13 +1,13 @@
 use syn::Meta;
 use crate::*;
 
-const NONDISPATCH_PREFIX: &'static str = "__nd_";
+pub const NONDISPATCH_PREFIX: &'static str = "__nd_";
 
 pub struct ProcessingStep3_8();
 
 impl ProcessingStep3_8 {
     // Process a method
-    pub fn exec(&self, host: &mut SModelHost, node: &Rc<MeaningMethod>, meaning: &Symbol, base_accessor: &str, asc_meaning_list: &[Symbol]) {
+    pub fn exec(&self, host: &mut SModelHost, node: &Rc<MeaningMethod>, meaning: &Symbol) {
         let input = &node.inputs;
         let type_params = [node.generics.lt_token.to_token_stream(), node.generics.params.to_token_stream(), node.generics.gt_token.to_token_stream()];
         let where_clause = node.generics.where_clause.as_ref().map(|c| c.to_token_stream()).unwrap_or(proc_macro2::TokenStream::new());
@@ -111,7 +111,23 @@ impl ProcessingStep3_8 {
             }
         }
 
-        let attr = node.attributes.borrow().clone();
+        let mut attr = node.attributes.borrow().clone();
+
+        // Remove #[doc] attributes from nondispatch methods
+        // for less cost.
+        let mut indices = Vec::<usize>::new();
+        let mut i: usize = 0;
+        for attr in attr.iter() {
+            if let Meta::List(list) = &attr.meta {
+                if list.path.to_token_stream().to_string() == "doc" {
+                    indices.push(i);
+                }
+            }
+            i += 1;
+        }
+        for i in indices.iter().rev() {
+            attr.remove(*i);
+        }
 
         meaning.method_output().borrow_mut().extend::<TokenStream>(quote! {
             #(#attr)*

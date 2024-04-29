@@ -30,11 +30,11 @@ Steps after parsing:
   * [x] 3.6 Define the structure `M`
   * [x] 3.7 Define the constructor
   * [x] 3.8 Traverse each method (see below section 3.8)
-  * [ ] 3.9 Traverse each method
-    * [ ] Skip if it is not mapped to an instance method slot.
+  * [x] 3.9 Traverse each method
+    * [x] Skip if it is not mapped to an instance method slot.
     * [ ] Contribute the method `#method_name` with prepended dynamic dispatch logic, invoking `self.#nondispatch_name(#input_args)` at the end of the method body, to the output
   * [ ] 3.10 Contribute a `to::<T: TryInto<M>>()` method that uses `TryInto`
-  * [ ] 3.11 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
+  * [ ] 3.11 Contribute an `is::<T: TryInto<M>>()` method that uses `to::<T>().is_some()`
   * [ ] 3.12 Output the code of all methods to an `impl` block for the meaning data type.
 * [ ] 4. Output the `mod #DATA { use super::*; ... }` module with its respective contents
 
