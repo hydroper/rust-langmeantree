@@ -48,7 +48,8 @@ Steps after parsing:
     * [ ] For each `super.f(...)` call within the method's block
       * [ ] Lookup for a `f` method in the inherited meanings in descending order
       * [ ] If nothing found, report an error at that `super.f(...)` call; otherwise
-        * [ ] Replace `super.f(...)` by `InheritedM::__sm_nondispatch_f(self, ...)`
+        * [ ] Let `base` be `self.clone()` surrounded by each submeaning's structure in the correct order.
+        * [ ] Replace `super.f(...)` by `InheritedM::__sm_nondispatch_f(#base, ...)`
     * [ ] Parse the modified method's block as a statement sequence
     * [ ] If the method is marked as `override`
       * [ ] Lookup for a method with the smodele name in the inherited meanings in descending order
