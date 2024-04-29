@@ -84,6 +84,9 @@ impl ProcessingStep3_8 {
                 name.span().unwrap().error(format!("No inherited method '{}'.", slot.name())).emit();
             }
         }
+
+        // Refer to the nondispatch method as `nondispatch_name = format!("__nd_{method_name}")`.
+        let nondispatch_name = format!("__nd_{}", slot.name());
     }
 
     fn begins_with_no_receiver(input: &Punctuated<FnArg, Comma>) -> bool {
