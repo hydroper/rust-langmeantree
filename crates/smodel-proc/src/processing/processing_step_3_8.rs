@@ -23,12 +23,12 @@ impl ProcessingStep3_8 {
         if Self::begins_with_no_receiver(&node.inputs) {
             let attr = node.attributes.borrow().clone();
             let stmt = &node.statements;
-            meaning.method_output().borrow_mut().extend::<TokenStream>(quote! {
+            meaning.method_output().borrow_mut().extend(quote! {
                 #(#attr)*
                 #vis fn #name #(#type_params)*(#input) #result_annotation #where_clause {
                     #stmt
                 }
-            }.try_into().unwrap());
+            });
             return;
         }
 
@@ -129,12 +129,12 @@ impl ProcessingStep3_8 {
             attr.remove(*i);
         }
 
-        meaning.method_output().borrow_mut().extend::<TokenStream>(quote! {
+        meaning.method_output().borrow_mut().extend(quote! {
             #(#attr)*
             fn #nondispatch_name #(#type_params)*(&self, #inputs) #result_annotation #where_clause {
                 #statements
             }
-        }.try_into().unwrap());
+        });
     }
 
     fn begins_with_no_receiver(input: &Punctuated<FnArg, Comma>) -> bool {

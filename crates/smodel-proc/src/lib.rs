@@ -121,7 +121,7 @@ impl Parse for Meaning {
         // Inherits
         let mut inherits: Option<Ident> = None;
         if input.peek(Token![:]) {
-            input.parse::<Token![:]>();
+            input.parse::<Token![:]>()?;
             inherits = Some(input.parse::<Ident>()?);
         }
 
@@ -204,7 +204,7 @@ fn parse_meaning_method(input: ParseStream, meaning_name: &str) -> Result<Meanin
     let inputs = parens_content.parse_terminated(FnArg::parse, Comma)?;
 
     let result_type: Option<Type> = if !is_constructor && input.peek(Token![->]) {
-        input.parse::<Token![->]>();
+        input.parse::<Token![->]>()?;
         Some(input.parse::<Type>()?)
     } else {
         None
@@ -351,23 +351,23 @@ pub fn smodel(input: TokenStream) -> TokenStream {
             let sn = submeaning.name();
             variants.push(format!("{sn}(::std::rc::Rc<{sn}>)"));
         }
-        host.data_output.extend::<TokenStream>(quote! {
+        host.data_output.extend(quote! {
             #[non_exhaustive]
             pub enum #submeaning_enum {
                 #(#variants),*
                 #DATA_VARIANT_NO_SUBMEANING,
             }
-        }.try_into().unwrap());
+        });
 
         // 3.5. Define the data structure #DATA::M at the #DATA module output,
         // containing all field output.
         let field_output = field_output.to_string();
-        host.data_output.extend::<TokenStream>(quote! {
+        host.data_output.extend(quote! {
             #[non_exhaustive]
             pub struct #meaning_name {
                 #field_output
             }
-        }.try_into().unwrap());
+        });
 
         // 3.6. Define the structure M
         ProcessingStep3_6().exec(&mut host, &meaning, &base_accessor);
@@ -382,11 +382,40 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
         // 3.9. Traverse each method
         for method in meaning_node.methods.iter() {
-            ProcessingStep3_9().exec(&mut host, method, &meaning, &base_accessor, &asc_meaning_list);
+            ProcessingStep3_9().exec(&mut host, method, &meaning);
         }
+
+        // * Contribute a `to::<T: TryFrom<M>>()` method.
+        // * Contribute an `is::<T>()` method.
+        meaning.method_output().borrow_mut().extend(quote! {
+            pub fn to::<T: TryFrom<#meaning_name>>(&self) -> Result<T, ::smodel::SModelError> {
+                T::try_from(self.clone())
+            }
+            pub fn is::<T: TryFrom<#meaning_name>>(&self) -> bool {
+                T::try_from(self.clone()).is_ok()
+            }
+        });
+
+        let method_output = meaning.method_output().borrow().clone();
+
+        // Output the code of all methods to an `impl` block for the meaning data type.
+        host.output.extend::<TokenStream>(quote! {
+            impl #meaning_name {
+                #method_output
+            }
+        }.try_into().unwrap());
     }
 
-    // 4.
+    let data_output = host.data_output;
+
+    // 4. Output the `mod #DATA { use super::*; ... }` module with its respective contents
+    host.output.extend::<TokenStream>(quote! {
+        mod #DATA {
+            use super::*;
+
+            #data_output
+        }
+    }.try_into().unwrap());
 
     todo!();
 

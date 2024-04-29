@@ -1,11 +1,10 @@
-use syn::Meta;
 use crate::*;
 
 pub struct ProcessingStep3_9();
 
 impl ProcessingStep3_9 {
     // Process a method
-    pub fn exec(&self, host: &mut SModelHost, node: &Rc<MeaningMethod>, meaning: &Symbol, base_accessor: &str, asc_meaning_list: &[Symbol]) {
+    pub fn exec(&self, host: &mut SModelHost, node: &Rc<MeaningMethod>, meaning: &Symbol) {
         // Skip if it is not mapped to an instance method slot.
         let Some(slot) = host.semantics.get(node) else {
             return;
@@ -37,12 +36,41 @@ impl ProcessingStep3_9 {
         // Contribute the method #method_name with prepended dynamic dispatch logic,
         // invoking `self.#nondispatch_name(#input_args)` at the end of the method body,
         // to the `impl` output.
-        meaning.method_output().borrow_mut().extend::<TokenStream>(quote! {
+        let dynamic_dispatch = self.generate_dynamic_dispatch(slot.override_logic_mapping());
+        meaning.method_output().borrow_mut().extend(quote! {
             #(#attr)*
             #vis fn #name #(#type_params)*(&self, #inputs) #result_annotation #where_clause {
                 #dynamic_dispatch
                 self.#nondispatch_name(#input_args)
             }
-        }.try_into().unwrap());
+        });
+    }
+
+    fn generate_dynamic_dispatch(&self, mapping: SharedMap<Symbol, Rc<OverrideLogicMapping>>) -> proc_macro2::TokenStream {
+        let mut out = proc_macro2::TokenStream::new();
+        let mut first = true;
+        for (submeaning, logic) in mapping.borrow().iter() {
+            let submeaning_name = submeaning.name();
+            if !first {
+                out.extend(quote! { else });
+            }
+            let mut d1 = self.generate_dynamic_dispatch(logic.override_logic_mapping());
+            if d1.is_empty() {
+                if let Some(code) = logic.override_code() {
+                    d1.extend(code);
+                }
+            } else {
+                if let Some(code) = logic.override_code() {
+                    d1.extend(quote! { else { #code } });
+                }
+            }
+            out.extend(quote! {
+                if self.is::<#submeaning_name>() {
+                    #d1
+                }
+            });
+            first = false;
+        }
+        out
     }
 }

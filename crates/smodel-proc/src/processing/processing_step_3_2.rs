@@ -37,16 +37,16 @@ impl ProcessingStep3_2 {
         let fv = self.match_field(asc_meaning_list, 0, &format!("{base_accessor}.upgrade().unwrap()"), field_name);
 
         if slot.is_ref() {
-            meaning.method_output().borrow_mut().extend::<TokenStream>(quote! {
+            meaning.method_output().borrow_mut().extend(quote! {
                 fn #field_name(&self) -> #field_type {
                     #fv.borrow().clone()
                 }
                 fn #setter_name(&self, v: #field_type) {
                     $fv.replace(v);
                 }
-            }.try_into().unwrap());
+            });
         } else {
-            meaning.method_output().borrow_mut().extend::<TokenStream>(quote! {
+            meaning.method_output().borrow_mut().extend(quote! {
                 fn #field_name(&self) -> #field_type {
                     #fv.get()
                 }
@@ -54,7 +54,7 @@ impl ProcessingStep3_2 {
                 fn #setter_name(&self, v: #field_type) {
                     #fv.set(v);
                 }
-            }.try_into().unwrap());
+            });
         }
     }
 

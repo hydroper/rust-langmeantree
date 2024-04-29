@@ -20,12 +20,12 @@ impl ProcessingStep3_7 {
         // Define the the instance `#CTOR_INIT_NAME` method,
         // containing everything but `super()` and structure initialization.
         let statements = node.map(|node| node.statements.clone()).unwrap_or(vec![]);
-        meaning.method_output().borrow_mut().extend::<TokenStream>(quote! {
+        meaning.method_output().borrow_mut().extend(quote! {
             #(#attr)*
             fn #CTOR_INIT_NAME #(#type_params)*(&self, #input) #where_clause {
                 #(#statements)*
             }
-        }.try_into().unwrap());
+        });
 
         // `M::new` output
         let mut m_new_out = TokenStream::new();
@@ -64,12 +64,12 @@ impl ProcessingStep3_7 {
 
         let m_new_out: proc_macro2::TokenStream = m_new_out.into();
 
-        meaning.method_output().borrow_mut().extend::<TokenStream>(quote! {
+        meaning.method_output().borrow_mut().extend(quote! {
             #(#attr)*
             #vis fn new #(#type_params)*(arena: &#arena_type_name, #input) -> Self #where_clause {
                 #m_new_out
             }
-        }.try_into().unwrap());
+        });
     }
 
     fn init_data(&self, asc_meaning_list: &[Symbol], meaning_index: usize) -> proc_macro2::TokenStream {

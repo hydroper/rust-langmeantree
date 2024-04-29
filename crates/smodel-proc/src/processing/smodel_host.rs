@@ -5,7 +5,7 @@ pub struct SModelHost {
     pub semantics: TreeSemantics<Symbol>,
     pub meaning_slots: HashMap<String, Symbol>,
     pub output: TokenStream,
-    pub data_output: TokenStream,
+    pub data_output: proc_macro2::TokenStream,
 }
 
 impl SModelHost {
@@ -15,7 +15,7 @@ impl SModelHost {
             semantics: TreeSemantics::new(),
             meaning_slots: HashMap::new(),
             output: TokenStream::new(),
-            data_output: TokenStream::new(),
+            data_output: proc_macro2::TokenStream::new(),
         }
     }
 }

@@ -36,7 +36,7 @@ impl LmtFactory {
             submeanings: shared_array![],
             fields: shared_map![],
             methods: shared_map![],
-            method_output: Rc::new(RefCell::new(TokenStream::new())),
+            method_output: Rc::new(RefCell::new(proc_macro2::TokenStream::new())),
         }))))
     }
 
@@ -180,7 +180,7 @@ impl Symbol {
         }
     }
 
-    pub fn method_output(&self) -> Rc<RefCell<TokenStream>> {
+    pub fn method_output(&self) -> Rc<RefCell<proc_macro2::TokenStream>> {
         match access!(self) {
             Symbol1::MeaningSlot(slot) => slot.method_output.clone(),
             _ => panic!(),
@@ -255,7 +255,7 @@ struct MeaningSlot1 {
     submeanings: SharedArray<Symbol>,
     fields: SharedMap<String, Symbol>,
     methods: SharedMap<String, Symbol>,
-    method_output: Rc<RefCell<TokenStream>>,
+    method_output: Rc<RefCell<proc_macro2::TokenStream>>,
 }
 
 struct FieldSlot1 {
