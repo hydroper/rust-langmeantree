@@ -86,7 +86,7 @@ impl ProcessingStep3_7 {
         let variant = if meaning_index + 1 < asc_meaning_list.len() {
             let next_m = asc_meaning_list[meaning_index + 1].name();
             let i = self.init_data(asc_meaning_list, meaning_index + 1);
-            quote! { #submeaning_enum::#next_m(Rc::new(#i)) }
+            quote! { #submeaning_enum::#next_m(::std::rc::Rc::new(#i)) }
         } else {
             quote! { #submeaning_enum::#DATA_VARIANT_NO_SUBMEANING }
         };

@@ -41,7 +41,7 @@ impl ProcessingStep3_6 {
             host.output.extend::<TokenStream>(quote! {
                 #(#attributes)*
                 #[derive(Clone)]
-                #visi struct #meaning_name(Weak<#DATA::#meaning_name>);
+                #visi struct #meaning_name(::std::rc::Weak<#DATA::#meaning_name>);
 
                 impl PartialEq for #meaning_name {
                     fn eq(&self, other: &Self) -> bool {
