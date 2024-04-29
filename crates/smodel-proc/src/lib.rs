@@ -358,7 +358,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         ProcessingStep3_6().exec(&mut host, &meaning, &base_accessor);
 
         // 3.7. Define the constructor
-        ProcessingStep3_7().exec(&mut host, &meaning, &asc_meaning_list);
+        ProcessingStep3_7().exec(&mut host, meaning_node.constructor.as_ref(), &meaning, &asc_meaning_list, &arena_type_name.to_string());
     }
 
     // 4.

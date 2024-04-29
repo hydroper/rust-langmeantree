@@ -56,14 +56,13 @@ Steps after parsing:
 
 #### 3.7 Constructor
 
-* [ ] 1. Define the constructor *initializer* code as an instance `__ctor()` method, containing everything but `super()` and structure initialization.
-* [ ] 2. Prepend an `arena: &MeaningArena` parameter to the `M::new()`'s input.
-* [ ] 3. At `M::new`, let `__o` be a complex `M2(M1(arena.allocate(__data__::M1 { ... })))` (notice the meaning layers) allocation initializing all meaning variants's fields with their default values.
-* [ ] 4. If the meaning inherits another meaning
-  * [ ] 4.1. At `M::new`, invoke `InheritedM::__ctor(&__o.0, ...super_arguments)`, passing all `super(...)` arguments.
-* [ ] 5. Output a `__o.__ctor(...arguments);` call to `M::new`.
-* [ ] 6. Output a `__o` return to `M::new`.
-* [ ] 7. Output the constructor as a static `new` method (`M::new`).
+* [x] 1. Define the the instance `#CTOR_INIT_NAME` method, containing everything but `super()` and structure initialization.
+* [ ] 2. At `M::new`, let `this` be a complex `M2(M1(arena.allocate(__data__::M1 { ... })))` (notice the meaning layers) allocation initializing all meaning variants's fields with their default values.
+* [ ] 3. If the meaning inherits another meaning
+  * [ ] 3.1. At `M::new`, invoke `InheritedM::#CTOR_INIT_NAME(&this.0, ...super_arguments)`, passing all `super(...)` arguments.
+* [ ] 4. Output a `this.#CTOR_INIT_NAME(...arguments);` call to `M::new`.
+* [ ] 5. Output a `this` return to `M::new`.
+* [ ] 6. Output the constructor as a static `new` method (`M::new`) with a prepended `arena: &#arena_type_name, ` parameter.
 
 ## Definition order
 
@@ -105,8 +104,12 @@ smodel! {
         let ref y: String = "".into();
 
         // The constructor; it is called as `Meaning::new(&arena, ...arguments)`.
+        //
+        // The instance is available inside the constructor code
+        // as the "this" local.
         pub fn Meaning() {
             super();
+            println!("{}", this.m());
         }
 
         pub fn m(&self) -> String {
