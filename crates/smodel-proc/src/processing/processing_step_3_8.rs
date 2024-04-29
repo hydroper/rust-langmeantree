@@ -88,6 +88,9 @@ impl ProcessingStep3_8 {
 
         // Define `nondispatch_name` as nondispatch prefix plus method name.
         let nondispatch_name = format!("{NONDISPATCH_PREFIX}{}", slot.name());
+
+        // Define input argument list
+        let input_args = convert_function_input_to_arguments(&inputs);
     }
 
     fn begins_with_no_receiver(input: &Punctuated<FnArg, Comma>) -> bool {
@@ -177,7 +180,38 @@ impl ProcessingStep3_8 {
                         continue;
                     }
 
-                    // Found super expression
+                    // Found super expression.
+
+                    // Lookup for a method in one of the base meanings.
+                    let Some(base_method) = meaning.lookup_method_in_base_meaning(&id.to_string()) else {
+                        id.span().unwrap().error(format!("Found no method '{}' at any base type.", id.to_string())).emit();
+                        continue;
+                    };
+
+                    // Let base be "self" followed by n = delta_of_descending_list_until_base_meaning
+                    // (where `base_meaning` is the base found method's `.defined_in()` call)
+                    // repeats of "".0".
+                    let mut base = "self".to_owned();
+                    let mut m = meaning.clone();
+                    while let Some(m1) = m.inherits() {
+                        base.push_str(".0");
+                        if m1 == base_method.defined_in() {
+                            break;
+                        }
+                        m = m1;
+                    }
+
+                    // Replace super.m(...) by BaseM::#nondispatch_name(&#base, ...)
+                    let nondispatch_name = format!("{NONDISPATCH_PREFIX}{}", base_method.name());
+                    let base_meaning = base_method.defined_in().name();
+                    let super_args = self.process_super_expression(g.stream(), meaning, method_slot);
+                    output.extend(quote! {
+                        #base_meaning::#nondispatch_name(&#base, #super_args)
+                    });
+                },
+                proc_macro2::TokenTree::Group(g) => {
+                    let stream = self.process_super_expression(g.stream(), meaning, method_slot);
+                    output.extend([proc_macro2::TokenTree::Group(proc_macro2::Group::new(g.delimiter(), stream))]);
                 },
                 _ => {
                     output.extend([token1.clone()]);

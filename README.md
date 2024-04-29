@@ -44,17 +44,13 @@ Steps after parsing:
   * [x] Lookup method in one of the base meanings
   * [x] Inherit documentation comments
 * [x] Define `nondispatch_name` as nondispatch prefix plus method name.
-* [ ] For each `super.f(...)` call within the method's block
-  * [ ] Lookup for a `f` method in the inherited meanings in descending order
-  * [ ] If nothing found, report an error at that `super.f(...)` call; otherwise
-    * [ ] Let `base` be `self` followed by `n = delta_of_descending_list_until_base_meaning` (where `base_meaning` is the base found method's `.defined_in()` call) repeats of `.0`
-    * [ ] Replace `super.f(...)` by `InheritedM::#nondispatch_name(#base, ...)` where `...` is `convert_function_input_to_arguments(&inputs)`
+* [x] For each `super.f(...)` call within the method's block
 * [ ] If the method is marked as `override`
   * [ ] Lookup for a method with the same name in the inherited meanings in descending order
     * [ ] If nothing found, report an error at the method's identifier; otherwise
       * [ ] Contribute "overriding" return call code to the respective override logic mapping according to meaning inheritance
 * [ ] Contribute the internal method `#nondispatch_name` without dynamic dispatch to the output
-* [ ] Contribute the method `#method_name` with prepended dynamic dispatch logic, invoking `self.#nondispatch_name(...)` at the end of the method body, to the output, where `...` is `convert_function_input_to_arguments(&inputs)`
+* [ ] Contribute the method `#method_name` with prepended dynamic dispatch logic, invoking `self.#nondispatch_name(#input_args)` at the end of the method body, to the output
 
 ## Definition order
 
