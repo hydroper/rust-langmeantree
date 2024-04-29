@@ -47,8 +47,8 @@ Steps after parsing:
       * [ ] Lookup for a method with the same name in the inherited meanings in descending order
         * [ ] If nothing found, report an error at the method's identifier; otherwise
           * [ ] Contribute "overriding" return call code to the respective override logic mapping according to meaning inheritance
-    * [ ] Contribute the method `#nondispatch_name` without dynamic dispatch to the output
-    * [ ] Contribute the method `m` with dynamic dispatch, invoking `self.#nondispatch_name()` at the end of the method body, to the output
+    * [ ] Contribute the internal method `#nondispatch_name` without dynamic dispatch to the output
+    * [ ] Contribute the method `#method_name` with prepended dynamic dispatch logic, invoking `self.#nondispatch_name()` at the end of the method body, to the output
   * [ ] 3.9 Contribute a `to::<T: TryInto<M>>()` method that uses `TryInto`
   * [ ] 3.10 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
   * [ ] 3.11 Output the code of all methods to an `impl` block for the meaning data type.
