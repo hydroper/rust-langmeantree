@@ -43,7 +43,7 @@ Steps after parsing:
   * [x] Remove it
   * [x] Lookup method in one of the base meanings
   * [x] Inherit documentation comments
-* [x] Refer to the nondispatch method as `nondispatch_name = format!("__nd_{method_name}")`.
+* [x] Define `nondispatch_name` as nondispatch prefix plus method name.
 * [ ] For each `super.f(...)` call within the method's block
   * [ ] Lookup for a `f` method in the inherited meanings in descending order
   * [ ] If nothing found, report an error at that `super.f(...)` call; otherwise

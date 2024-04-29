@@ -1,6 +1,7 @@
 use syn::Meta;
-
 use crate::*;
+
+const NONDISPATCH_PREFIX: &'static str = "__nd_";
 
 pub struct ProcessingStep3_8();
 
@@ -85,8 +86,8 @@ impl ProcessingStep3_8 {
             }
         }
 
-        // Refer to the nondispatch method as `nondispatch_name = format!("__nd_{method_name}")`.
-        let nondispatch_name = format!("__nd_{}", slot.name());
+        // Define `nondispatch_name` as nondispatch prefix plus method name.
+        let nondispatch_name = format!("{NONDISPATCH_PREFIX}{}", slot.name());
     }
 
     fn begins_with_no_receiver(input: &Punctuated<FnArg, Comma>) -> bool {
