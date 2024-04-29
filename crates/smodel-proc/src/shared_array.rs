@@ -2,20 +2,6 @@ use std::cell::RefCell;
 use std::hash::Hash;
 use std::rc::Rc;
 
-/// A shared mutable array of `T` managed by reference counting.
-///
-/// # Cloning
-/// 
-/// The `Clone` trait implements cloning of the array by reference.
-/// Use the `clone_content()` method to clone the array by content.
-/// 
-/// # Equality
-/// 
-/// The `PartialEq` trait performs reference comparison of two arrays.
-/// 
-/// # Hashing
-/// 
-/// The `Hash` trait performs hashing of the array by reference.
 #[derive(Clone)]
 pub struct SharedArray<T>(Rc<RefCell<Vec<T>>>);
 
@@ -43,21 +29,21 @@ impl<T> SharedArray<T> {
         self.0.borrow().get(index).map(|v| v.clone())
     }
 
-    pub fn set(&mut self, index: usize, value: T) where T: Clone {
+    pub fn _set(&mut self, index: usize, value: T) where T: Clone {
         self.0.borrow_mut()[index] = value.clone();
     }
 
-    pub fn remove(&mut self, index: usize) {
+    pub fn _remove(&mut self, index: usize) {
         self.0.borrow_mut().remove(index);
     }
 
-    pub fn includes(&self, value: &T) -> bool where T: PartialEq {
+    pub fn _includes(&self, value: &T) -> bool where T: PartialEq {
         self.0.borrow().contains(value)
     }
 
-    pub fn index_of(&self, value: &T) -> Option<usize> where T: PartialEq {
+    pub fn _index_of(&self, value: &T) -> Option<usize> where T: PartialEq {
         let this = self.0.borrow();
-        for i in 0..self.length() {
+        for i in 0..self._length() {
             let value_2 = this.get(i).unwrap();
             if value == value_2 {
                 return Some(i);
@@ -66,7 +52,7 @@ impl<T> SharedArray<T> {
         None
     }
 
-    pub fn length(&self) -> usize {
+    pub fn _length(&self) -> usize {
         self.0.borrow().len()
     }
 
@@ -81,7 +67,7 @@ impl<T> SharedArray<T> {
         }
     }
 
-    pub fn clone_content(&self) -> Self where T: Clone {
+    pub fn _clone_content(&self) -> Self where T: Clone {
         let mut r = Self::new();
         for v in self.iter() {
             r.push(v);

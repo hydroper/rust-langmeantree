@@ -418,7 +418,6 @@ pub fn smodel(input: TokenStream) -> TokenStream {
     }.try_into().unwrap());
 
     // 5. Return output.
-
     host.output
 }
 

@@ -3,32 +3,6 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use std::rc::Rc;
 
-/// A shared mutable hash map managed by reference counting.
-/// 
-/// # Cloning
-/// 
-/// The `Clone` trait implements cloning of the map by reference.
-/// Use the `clone_content()` method to clone the map by content.
-/// 
-/// # Equality
-/// 
-/// The `PartialEq` trait performs reference comparison of two maps.
-///
-/// # Hashing
-/// 
-/// The `Hash` trait performs hashing of the map by reference.
-///
-/// # Iteration
-/// 
-/// To iterate a `SharedMap`, it is required to invoke the `borrow()` method,
-/// as in the following snippet:
-/// 
-/// ```ignore
-/// map_object.borrow().iter(|(k, v)| {
-///     // k: &K
-///     // v: &V
-/// });
-/// ```
 #[derive(Clone)]
 pub struct SharedMap<K, V>(Rc<RefCell<HashMap<K, V>>>);
 
@@ -60,7 +34,7 @@ impl<K, V> SharedMap<K, V> {
         self.0.borrow_mut().insert(key, value);
     }
 
-    pub fn remove(&mut self, key: &K) -> Option<V> where K: Eq + Hash {
+    pub fn _remove(&mut self, key: &K) -> Option<V> where K: Eq + Hash {
         self.0.borrow_mut().remove(key)
     }
 
@@ -68,11 +42,11 @@ impl<K, V> SharedMap<K, V> {
         self.0.borrow().contains_key(key)
     }
 
-    pub fn length(&self) -> usize {
+    pub fn _length(&self) -> usize {
         self.0.borrow().len()
     }
 
-    pub fn clone_content(&self) -> Self where K: Clone + Eq + Hash, V: Clone {
+    pub fn _clone_content(&self) -> Self where K: Clone + Eq + Hash, V: Clone {
         let mut r = Self::new();
         for (k, v) in self.borrow().iter() {
             r.set(k.clone(), v.clone());
