@@ -28,34 +28,37 @@ Steps after parsing:
   * [x] 3.4 Contribute a `#[non_exhaustive]` enumeration of submeanings whose name is `submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + meaning_name` at the `__data__` module.
   * [x] 3.5. Define the data structure `__data__::M` at the `__data__` module output, containing all field output.
   * [x] 3.6 Define the structure `M`
-  * [x] 3.7 Define the constructor (see below section 3.7)
-  * [ ] 3.8 Traverse each method
-    * [ ] If it does not begin with a `self` receiver
-      * Report error at the receiver parameter
-      * Ignore method
-    * [ ] Create a `MethodSlot` with the appropriate settings.
-    * [ ] Contribute the method slot to the meaning.
-    * [ ] Check if the method has a `#[inheritdoc]` attribute; if it has one
-      * [ ] Remove it
-      * [ ] Lookup method in one of the base meanings
-      * [ ] Inherit documentation comments
-    * [ ] *Note: refer to the nondispatch method as `nondispatch_name = format!("__nd_{method_name}")`*
-    * [ ] For each `super.f(...)` call within the method's block
-      * [ ] Lookup for a `f` method in the inherited meanings in descending order
-      * [ ] If nothing found, report an error at that `super.f(...)` call; otherwise
-        * [ ] Let `base` be `self.clone()` surrounded by each submeaning's structure in the correct order.
-        * [ ] Replace `super.f(...)` by `InheritedM::#nondispatch_name(#base, ...)` where `...` is `convert_function_input_to_arguments(&function_input[1..])`
-    * [ ] Parse the modified method's block as a statement sequence
-    * [ ] If the method is marked as `override`
-      * [ ] Lookup for a method with the same name in the inherited meanings in descending order
-        * [ ] If nothing found, report an error at the method's identifier; otherwise
-          * [ ] Contribute "overriding" return call code to the respective override logic mapping according to meaning inheritance
-    * [ ] Contribute the internal method `#nondispatch_name` without dynamic dispatch to the output
-    * [ ] Contribute the method `#method_name` with prepended dynamic dispatch logic, invoking `self.#nondispatch_name(...)` at the end of the method body, to the output, where `...` is `convert_function_input_to_arguments(&function_input[1..])`
+  * [x] 3.7 Define the constructor
+  * [ ] 3.8 Traverse each method (see below section 3.8)
   * [ ] 3.9 Contribute a `to::<T: TryInto<M>>()` method that uses `TryInto`
   * [ ] 3.10 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
   * [ ] 3.11 Output the code of all methods to an `impl` block for the meaning data type.
 * [ ] 4. Output the `mod __data__ { use super::*; ... }` module with its respective contents
+
+#### 3.8 For each method
+
+* [ ] If it does not begin with a `self` receiver
+  * Report error at the receiver parameter
+  * Ignore method
+* [ ] Create a `MethodSlot` with the appropriate settings.
+* [ ] Contribute the method slot to the meaning.
+* [ ] Check if the method has a `#[inheritdoc]` attribute; if it has one
+  * [ ] Remove it
+  * [ ] Lookup method in one of the base meanings
+  * [ ] Inherit documentation comments
+* [ ] *Note: refer to the nondispatch method as `nondispatch_name = format!("__nd_{method_name}")`*
+* [ ] For each `super.f(...)` call within the method's block
+  * [ ] Lookup for a `f` method in the inherited meanings in descending order
+  * [ ] If nothing found, report an error at that `super.f(...)` call; otherwise
+    * [ ] Let `base` be `self.clone()` surrounded by each submeaning's structure in the correct order.
+    * [ ] Replace `super.f(...)` by `InheritedM::#nondispatch_name(#base, ...)` where `...` is `convert_function_input_to_arguments(&function_input[1..])`
+* [ ] Parse the modified method's block as a statement sequence
+* [ ] If the method is marked as `override`
+  * [ ] Lookup for a method with the same name in the inherited meanings in descending order
+    * [ ] If nothing found, report an error at the method's identifier; otherwise
+      * [ ] Contribute "overriding" return call code to the respective override logic mapping according to meaning inheritance
+* [ ] Contribute the internal method `#nondispatch_name` without dynamic dispatch to the output
+* [ ] Contribute the method `#method_name` with prepended dynamic dispatch logic, invoking `self.#nondispatch_name(...)` at the end of the method body, to the output, where `...` is `convert_function_input_to_arguments(&function_input[1..])`
 
 ## Definition order
 
