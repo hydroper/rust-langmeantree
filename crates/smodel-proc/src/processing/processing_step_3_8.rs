@@ -110,6 +110,15 @@ impl ProcessingStep3_8 {
                 name.span().unwrap().error(format!("Found no method '{}' in base.", slot.name())).emit();
             }
         }
+
+        let attr = node.attributes.borrow().clone();
+
+        meaning.method_output().borrow_mut().extend::<TokenStream>(quote! {
+            #(#attr)*
+            fn #nondispatch_name #(#type_params)*(&self, #inputs) #result_annotation #where_clause {
+                #statements
+            }
+        }.try_into().unwrap());
     }
 
     fn begins_with_no_receiver(input: &Punctuated<FnArg, Comma>) -> bool {

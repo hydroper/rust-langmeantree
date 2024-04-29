@@ -29,7 +29,7 @@ Steps after parsing:
   * [x] 3.5. Define the data structure `#DATA::M` at the `#DATA` module output, containing all field output.
   * [x] 3.6 Define the structure `M`
   * [x] 3.7 Define the constructor
-  * [ ] 3.8 Traverse each method (see below section 3.8)
+  * [x] 3.8 Traverse each method (see below section 3.8)
   * [ ] 3.9 Traverse each method
     * [ ] Skip if it is not mapped to an instance method slot.
     * [ ] Contribute the method `#method_name` with prepended dynamic dispatch logic, invoking `self.#nondispatch_name(#input_args)` at the end of the method body, to the output
@@ -37,19 +37,6 @@ Steps after parsing:
   * [ ] 3.11 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
   * [ ] 3.12 Output the code of all methods to an `impl` block for the meaning data type.
 * [ ] 4. Output the `mod #DATA { use super::*; ... }` module with its respective contents
-
-#### 3.8 For each method
-
-* [x] Create a `MethodSlot` with the appropriate settings.
-* [x] Contribute the method slot to the meaning.
-* [x] Check if the method has a `#[inheritdoc]` attribute; if it has one
-  * [x] Remove it
-  * [x] Lookup method in one of the base meanings
-  * [x] Inherit documentation comments
-* [x] Define `nondispatch_name` as nondispatch prefix plus method name.
-* [x] Process super expressions
-* [x] Perform overriding
-* [ ] Contribute the internal method `#nondispatch_name` without dynamic dispatch to the output
 
 ## Definition order
 
