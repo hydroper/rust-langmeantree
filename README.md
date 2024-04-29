@@ -36,18 +36,19 @@ Steps after parsing:
       * [ ] Remove it
       * [ ] Lookup method in one of the base meanings
       * [ ] Inherit documentation comments
+    * [ ] *Note: refer to the nondispatch method as `nondispatch_name = format!("__nd_{method_name}")`*
     * [ ] For each `super.f(...)` call within the method's block
       * [ ] Lookup for a `f` method in the inherited meanings in descending order
       * [ ] If nothing found, report an error at that `super.f(...)` call; otherwise
         * [ ] Let `base` be `self.clone()` surrounded by each submeaning's structure in the correct order.
-        * [ ] Replace `super.f(...)` by `InheritedM::__sm_nondispatch_f(#base, ...)`
+        * [ ] Replace `super.f(...)` by `InheritedM::#nondispatch_name(#base, ...)`
     * [ ] Parse the modified method's block as a statement sequence
     * [ ] If the method is marked as `override`
-      * [ ] Lookup for a method with the smodele name in the inherited meanings in descending order
+      * [ ] Lookup for a method with the same name in the inherited meanings in descending order
         * [ ] If nothing found, report an error at the method's identifier; otherwise
           * [ ] Contribute "overriding" return call code to the respective override logic mapping according to meaning inheritance
-    * [ ] Contribute the method `__sm_nondispatch_m` without dynamic dispatch to the output
-    * [ ] Contribute the method `m` with dynamic dispatch, invoking `self.__sm_nondispatch_m()` at the end of the method body, to the output
+    * [ ] Contribute the method `#nondispatch_name` without dynamic dispatch to the output
+    * [ ] Contribute the method `m` with dynamic dispatch, invoking `self.#nondispatch_name()` at the end of the method body, to the output
   * [ ] 3.9 Contribute a `to::<T: TryInto<M>>()` method that uses `TryInto`
   * [ ] 3.10 Contribute an `is::<T>` method that uses `to::<T>().is_some()`
   * [ ] 3.11 Output the code of all methods to an `impl` block for the meaning data type.
@@ -55,11 +56,11 @@ Steps after parsing:
 
 #### 3.7 Constructor
 
-* [ ] 1. Define the constructor *initializer* code as an instance `__sm__ctor()` method, containing everything but `super()` and structure initialization.
-* [ ] 2. Prepend an `arena: &MeaningArena` parameter to the constructor's input (not to the `__sm__ctor()` method).
+* [ ] 1. Define the constructor *initializer* code as an instance `__ctor()` method, containing everything but `super()` and structure initialization.
+* [ ] 2. Prepend an `arena: &MeaningArena` parameter to the constructor's input (not to the `__ctor()` method).
 * [ ] 3. At `M::new`, let `__sm_r` be a complex `M2(M1(arena.allocate(__data__::M1 { ... })))` (notice the meaning layers) allocation initializing all meaning variants's fields with their default values.
 * [ ] 4. If the meaning inherits another meaning
-  * [ ] 4.1. At `M::new`, invoke `InheritedM::__sm__ctor(&__sm_r.0, ...super_arguments)`, passing all `super(...)` arguments.
+  * [ ] 4.1. At `M::new`, invoke `InheritedM::__ctor(&__sm_r.0, ...super_arguments)`, passing all `super(...)` arguments.
 * [ ] 5. Output a `__sm_r.__sm_ctor(...arguments);` call to `M::new`.
 * [ ] 6. Output a `__sm_r` return to `M::new`.
 * [ ] 7. Output the constructor as a static `new` method (`M::new`).
