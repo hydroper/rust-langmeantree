@@ -72,34 +72,9 @@ smodel! {
     type Arena = MeaningArena;
 
     struct Meaning {
-        // Fields use Cell and are copied when read, by default;
-        // therefore assuming the variable's data type implements
-        // Copy.
-        //
-        // Use this form for primitive types such as f64, u32,
-        // usize, bool, and so on.
-        //
-        // fn x(&self) -> f64
-        // fn set_x(&self, value: f64)
         let x: f64 = 0.0;
-
-        // Use "ref" for RefCell. RefCell is used for data types
-        // such as String, Vec, HashMap, Rc, and so on.
-        //
-        // Note that this will assume that the data type implements Clone,
-        // as the methods clone data on read.
-        //
-        // For semantic cases that need mutability, use a
-        // shared container that is cloned by reference.
-        //
-        // fn y(&self) -> String
-        // fn set_y(&self, value: String) -> Self
         let ref y: String = "".into();
 
-        // The constructor; it is called as `Meaning::new(&arena, ...arguments)`.
-        //
-        // The instance is available inside the constructor code
-        // as the "this" local.
         pub fn Meaning() {
             super();
             println!("{}", this.m());
@@ -138,11 +113,31 @@ fn main() {
 }
 ```
 
+## Arena
+
+The arena's name is defined as the right-hand side of the first `type Arena = ArenaName1;` directive.
+
 ## Fields
+
+A field (a `let` declaration) has an optional `ref` modifier indicating whether to use `RefCell` or `Cell`. For all, types are either cloned or copied on read. Use `ref` for heap-allocated resources such as `String`.
+
+Fields have a pair of a getter (`fieldname()`) and a setter (`set_fieldname(value)`).
+
+For mutable hash maps or vectors, it is recommended to use a container that is cloned by reference and not by content.
 
 Fields are always private to the meaning, therefore there are no attributes; the field definition always starts with the `let` keyword, without a RustDoc comment.
 
-It is recommended for fields to always start with a underscore `_`, and consequently using accesses such as `__x()`, or `set__x(v)`.
+It is recommended for fields to always start with a underscore `_`, and consequently using accesses such as `_x()`, or `set__x(v)`.
+
+Then, you would implement methods that override other methods in a base meaning, allowing for an *unified* data type that supports methods that operate on more than one variant.
+
+## Constructor
+
+The constructor is a method whose name matches the meaning's name. The `arena` parameter is implicitly prepended to the formal parameter list.
+
+The constructor is translated to a static `new` method.
+
+The constructor contains a local `this` variable whose data type is the instance of that meaning.
 
 ## Submeanings
 
@@ -156,6 +151,6 @@ The `super.f()` expression is supported by preprocessing the token sequence of a
 
 `super.f()` does a lookup in the method lists in the descending meanings.
 
-## Documentation
+## Inheriting documentation
 
 Use the `#[inheritdoc]` attribute to inherit the RustDoc comment of an overriden method.
