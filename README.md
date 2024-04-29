@@ -37,10 +37,10 @@ Steps after parsing:
 
 #### 3.8 For each method
 
-* [ ] Create a `MethodSlot` with the appropriate settings.
-* [ ] Contribute the method slot to the meaning.
+* [x] Create a `MethodSlot` with the appropriate settings.
+* [x] Contribute the method slot to the meaning.
 * [ ] Check if the method has a `#[inheritdoc]` attribute; if it has one
-  * [ ] Remove it
+  * [*] Remove it
   * [ ] Lookup method in one of the base meanings
   * [ ] Inherit documentation comments
 * [ ] *Note: refer to the nondispatch method as `nondispatch_name = format!("__nd_{method_name}")`*
@@ -48,14 +48,14 @@ Steps after parsing:
   * [ ] Lookup for a `f` method in the inherited meanings in descending order
   * [ ] If nothing found, report an error at that `super.f(...)` call; otherwise
     * [ ] Let `base` be `self.clone()` surrounded by each submeaning's structure in the correct order.
-    * [ ] Replace `super.f(...)` by `InheritedM::#nondispatch_name(#base, ...)` where `...` is `convert_function_input_to_arguments(&function_input[1..])`
+    * [ ] Replace `super.f(...)` by `InheritedM::#nondispatch_name(#base, ...)` where `...` is `convert_function_input_to_arguments(&inputs)`
 * [ ] Parse the modified method's block as a statement sequence
 * [ ] If the method is marked as `override`
   * [ ] Lookup for a method with the same name in the inherited meanings in descending order
     * [ ] If nothing found, report an error at the method's identifier; otherwise
       * [ ] Contribute "overriding" return call code to the respective override logic mapping according to meaning inheritance
 * [ ] Contribute the internal method `#nondispatch_name` without dynamic dispatch to the output
-* [ ] Contribute the method `#method_name` with prepended dynamic dispatch logic, invoking `self.#nondispatch_name(...)` at the end of the method body, to the output, where `...` is `convert_function_input_to_arguments(&function_input[1..])`
+* [ ] Contribute the method `#method_name` with prepended dynamic dispatch logic, invoking `self.#nondispatch_name(...)` at the end of the method body, to the output, where `...` is `convert_function_input_to_arguments(&inputs)`
 
 ## Definition order
 

@@ -1,3 +1,5 @@
+use syn::Meta;
+
 use crate::*;
 
 pub struct ProcessingStep3_8();
@@ -33,6 +35,45 @@ impl ProcessingStep3_8 {
         if !Self::begins_with_instance_receiver(&node.inputs) {
             node.inputs.span().unwrap().error("Instance receiver must be exactly `&self`.").emit();
             return;
+        }
+
+        // Remove the receiver
+        let mut inputs1 = node.inputs.iter().cloned().collect::<Vec<_>>();
+        inputs1.remove(0);
+        let mut inputs = Punctuated::<FnArg, Comma>::new();
+        inputs.extend(inputs1);
+
+        // * Look for the #[doc] attribute.
+        // * Look for the #[inheritdoc] attribute.
+        let mut doc_attr: Option<syn::Attribute> = None;
+        let mut inheritdoc_index: Option<usize> = None;
+        let mut i = 0usize;
+        for attr in node.attributes.borrow().iter() {
+            if let Meta::List(list) = &attr.meta {
+                if list.path.to_token_stream().to_string() == "doc" {
+                    doc_attr = Some(attr.clone());
+                }
+            } else if let Meta::Path(p) = &attr.meta {
+                if p.to_token_stream().to_string() == "inheritdoc" {
+                    inheritdoc_index = Some(i);
+                }
+            }
+            i += 1;
+        }
+
+        // Create a `MethodSlot` with the appropriate settings.
+        let slot = host.factory.create_method_slot(name.to_string(), meaning.clone(), doc_attr);
+
+        // Contribute the method slot to the meaning.
+        meaning.methods().set(slot.name(), slot.clone());
+
+        // Check if the method has a `#[inheritdoc]` attribute; if it has one:
+        //
+        // * Remove it
+        // * Lookup method in one of the base meanings
+        // * Inherit RustDoc comment
+        if let Some(i) = inheritdoc_index {
+            node.attributes.borrow_mut().remove(i);
         }
     }
 
