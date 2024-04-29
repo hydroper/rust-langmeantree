@@ -39,10 +39,10 @@ Steps after parsing:
 
 * [x] Create a `MethodSlot` with the appropriate settings.
 * [x] Contribute the method slot to the meaning.
-* [ ] Check if the method has a `#[inheritdoc]` attribute; if it has one
-  * [*] Remove it
-  * [ ] Lookup method in one of the base meanings
-  * [ ] Inherit documentation comments
+* [x] Check if the method has a `#[inheritdoc]` attribute; if it has one
+  * [x] Remove it
+  * [x] Lookup method in one of the base meanings
+  * [x] Inherit documentation comments
 * [ ] *Note: refer to the nondispatch method as `nondispatch_name = format!("__nd_{method_name}")`*
 * [ ] For each `super.f(...)` call within the method's block
   * [ ] Lookup for a `f` method in the inherited meanings in descending order

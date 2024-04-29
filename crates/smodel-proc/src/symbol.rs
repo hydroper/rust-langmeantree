@@ -53,7 +53,7 @@ impl LmtFactory {
         Symbol(self.arena.allocate(Symbol1::MethodSlot(Rc::new(MethodSlot1 {
             name,
             defined_in,
-            doc_attribute,
+            doc_attribute: RefCell::new(doc_attribute),
             override_logic_mapping: SharedMap::new(),
         }))))
     }
@@ -147,6 +147,18 @@ impl Symbol {
         return layers;
     }
 
+    pub fn lookup_method_in_base_meaning(&self, name: &str) -> Option<Symbol> {
+        let mut m = self.clone();
+        while let Some(m1) = m.inherits() {
+            let mt = m1.methods().get(&name.to_owned());
+            if let Some(mt) = mt {
+                return Some(mt);
+            }
+            m = m1;
+        }
+        None
+    }
+
     pub fn submeanings(&self) -> SharedArray<Symbol> {
         match access!(self) {
             Symbol1::MeaningSlot(slot) => slot.submeanings.clone(),
@@ -205,7 +217,14 @@ impl Symbol {
 
     pub fn doc_attribute(&self) -> Option<syn::Attribute> {
         match access!(self) {
-            Symbol1::MethodSlot(slot) => slot.doc_attribute.clone(),
+            Symbol1::MethodSlot(slot) => slot.doc_attribute.borrow().clone(),
+            _ => panic!(),
+        }
+    }
+
+    pub fn set_doc_attribute(&self, attr: Option<syn::Attribute>) {
+        match access!(self) {
+            Symbol1::MethodSlot(slot) => { slot.doc_attribute.replace(attr); },
             _ => panic!(),
         }
     }
@@ -249,7 +268,7 @@ struct FieldSlot1 {
 struct MethodSlot1 {
     name: String,
     defined_in: Symbol,
-    doc_attribute: Option<syn::Attribute>,
+    doc_attribute: RefCell<Option<syn::Attribute>>,
     override_logic_mapping: SharedMap<Symbol, Rc<OverrideLogicMapping>>,
 }
 
@@ -333,6 +352,7 @@ impl Deref for FieldSlot {
 /// * `name()`
 /// * `defined_in()`
 /// * `doc_attribute()`
+/// * `set_doc_attribute()`
 /// * `override_logic_mapping()` — Mapping from submeaning slot to override logic.
 #[derive(Clone, Hash, PartialEq, Eq)]
 pub struct MethodSlot(pub Symbol);

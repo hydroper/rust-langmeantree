@@ -74,6 +74,15 @@ impl ProcessingStep3_8 {
         // * Inherit RustDoc comment
         if let Some(i) = inheritdoc_index {
             node.attributes.borrow_mut().remove(i);
+
+            if let Some(base_method) = meaning.lookup_method_in_base_meaning(&slot.name()) {
+                slot.set_doc_attribute(base_method.doc_attribute());
+                if let Some(attr) = base_method.doc_attribute() {
+                    node.attributes.borrow_mut().push(attr);
+                }
+            } else {
+                name.span().unwrap().error(format!("No inherited method '{}'.", slot.name())).emit();
+            }
         }
     }
 
