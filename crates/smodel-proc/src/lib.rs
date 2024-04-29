@@ -255,7 +255,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         arena_type_name, meanings
     } = parse_macro_input!(input as MeaningTree);
 
-    let mut host = LmtHost::new();
+    let mut host = SModelHost::new();
 
     // # Validations
 
@@ -356,6 +356,9 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
         // 3.6. Define the structure M
         ProcessingStep3_6().exec(&mut host, &meaning, &base_accessor);
+
+        // 3.7. Define the constructor
+        ProcessingStep3_7().exec(&mut host, &meaning, &asc_meaning_list);
     }
 
     // 4.

@@ -55,14 +55,14 @@ Steps after parsing:
 
 #### 3.7 Constructor
 
-* [ ] 1. Define the constructor *initializer* code as an instance `__sm__ctor()` method
+* [ ] 1. Define the constructor *initializer* code as an instance `__sm__ctor()` method, containing everything but `super()` and structure initialization.
 * [ ] 2. Prepend an `arena: &MeaningArena` parameter to the constructor's input (not to the `__sm__ctor()` method).
-* [ ] 3. At the constructor output code, let `meaning` be a complex `M2(M1(arena.allocate(__data__::M1 { ... })))` (notice the meaning layers) allocation initializing all meaning variants's fields with their default values.
+* [ ] 3. At `M::new`, let `__sm_r` be a complex `M2(M1(arena.allocate(__data__::M1 { ... })))` (notice the meaning layers) allocation initializing all meaning variants's fields with their default values.
 * [ ] 4. If the meaning inherits another meaning
-  * [ ] 4.1. At the constructor output code, invoke `InheritedM::__sm__ctor(meaning, ...arguments)`, passing all `super(...)` arguments.
-* [ ] 5. Contribute all constructor initializer code to the `__sm_ctor()` method.
-* [ ] 6. Output a `meaning` return
-* [ ] 7. Output the constructor as a static `new` method.
+  * [ ] 4.1. At `M::new`, invoke `InheritedM::__sm__ctor(&__sm_r.0, ...super_arguments)`, passing all `super(...)` arguments.
+* [ ] 5. Output a `__sm_r.__sm_ctor(...arguments);` call to `M::new`.
+* [ ] 6. Output a `__sm_r` return to `M::new`.
+* [ ] 7. Output the constructor as a static `new` method (`M::new`).
 
 ## Definition order
 
@@ -105,6 +105,7 @@ smodel! {
 
         // The constructor; it is called as `Meaning::new(&arena, ...arguments)`.
         pub fn Meaning() {
+            super();
         }
 
         pub fn m(&self) -> String {

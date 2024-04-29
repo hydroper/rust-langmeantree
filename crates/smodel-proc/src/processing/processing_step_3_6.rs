@@ -3,7 +3,7 @@ use crate::*;
 pub struct ProcessingStep3_6();
 
 impl ProcessingStep3_6 {
-    pub fn exec(&self, host: &mut LmtHost, meaning: &Symbol, base_accessor: &str) {
+    pub fn exec(&self, host: &mut SModelHost, meaning: &Symbol, base_accessor: &str) {
         let meaning_name = meaning.name();
 
         // Define the structure M, as in
@@ -76,7 +76,7 @@ impl ProcessingStep3_6 {
         }
     }
 
-    fn contravariance(&self, host: &mut LmtHost, base_accessor: &str, base_meaning: &Symbol, submeaning: &Symbol) {
+    fn contravariance(&self, host: &mut SModelHost, base_accessor: &str, base_meaning: &Symbol, submeaning: &Symbol) {
         let base_meaning_name = base_meaning.name();
         let submeaning_name = submeaning.name();
         let base_accessor = base_accessor.replacen("self", "v", 1);

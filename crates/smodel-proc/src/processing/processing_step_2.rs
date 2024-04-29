@@ -3,7 +3,7 @@ use crate::*;
 pub struct ProcessingStep2();
 
 impl ProcessingStep2 {
-    pub fn exec(&self, host: &mut LmtHost, m: &Rc<Meaning>) {
+    pub fn exec(&self, host: &mut SModelHost, m: &Rc<Meaning>) {
         // 1. Create a MeaningSlot.
         let slot = host.factory.create_meaning_slot(m.name.to_string());
 
