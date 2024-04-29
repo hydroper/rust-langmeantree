@@ -57,12 +57,12 @@ Steps after parsing:
 #### 3.7 Constructor
 
 * [x] 1. Define the the instance `#CTOR_INIT_NAME` method, containing everything but `super()` and structure initialization.
-* [ ] 2. At `M::new`, let `this` be a complex `M2(M1(arena.allocate(__data__::M1 { ... })))` (notice the meaning layers) allocation initializing all meaning variants's fields with their default values.
+* [x] 2. At `M::new`, let `this` be a complex `M2(M1(__arena.allocate(__data__::M1 { ... })))` (notice the meaning layers) allocation initializing all meaning variants's fields with their default values.
 * [ ] 3. If the meaning inherits another meaning
   * [ ] 3.1. At `M::new`, invoke `InheritedM::#CTOR_INIT_NAME(&this.0, ...super_arguments)`, passing all `super(...)` arguments.
 * [ ] 4. Output a `this.#CTOR_INIT_NAME(...arguments);` call to `M::new`.
 * [ ] 5. Output a `this` return to `M::new`.
-* [ ] 6. Output the constructor as a static `new` method (`M::new`) with a prepended `arena: &#arena_type_name, ` parameter.
+* [ ] 6. Output the constructor as a static `new` method (`M::new`) with a prepended `__arena: &#arena_type_name, ` parameter.
 
 ## Definition order
 

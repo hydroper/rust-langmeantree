@@ -341,6 +341,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
             #[non_exhaustive]
             pub enum #submeaning_enum {
                 #(#variants),*
+                #DATA_VARIANT_NO_SUBMEANING,
             }
         }.try_into().unwrap());
 
