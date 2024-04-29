@@ -99,7 +99,6 @@ impl Symbol {
             Symbol1::MeaningSlot(slot) => slot.name.clone(),
             Symbol1::FieldSlot(slot) => slot.name.clone(),
             Symbol1::MethodSlot(slot) => slot.name.clone(),
-            _ => panic!(),
         }
     }
 
@@ -127,6 +126,25 @@ impl Symbol {
             m = m1.inherits();
         }
         out
+    }
+
+    /// Returns `MN(M2(M1(...)))` layers over a root `Weak<__data__::FirstM>` value.
+    /// 
+    /// Parameters:
+    /// 
+    /// * `base`: A `Weak<__data__::FirstM>` value.
+    pub fn create_layers_over_weak_root(base: &str, asc_meaning_list: &[Symbol]) -> String {
+        let mut layers = String::new();
+        let mut parens = 0usize;
+        for m in asc_meaning_list.iter().rev() {
+            let m_name = m.name();
+            layers.push_str(&format!("{m_name}("));
+            parens += 1;
+        }
+        layers.push_str(base);
+        layers.push_str(".clone()");
+        layers.push_str(&")".repeat(parens));
+        return layers;
     }
 
     pub fn submeanings(&self) -> SharedArray<Symbol> {

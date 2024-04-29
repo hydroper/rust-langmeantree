@@ -306,6 +306,8 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
         // 3.1. Write out the base data accessor
         //
+        // A `Weak<__data__::FirstM>` value.
+        //
         // For example, for the base meaning data type, this
         // is always "self.0"; for a direct submeaning of the base
         // data type, this is always "self.0.0".

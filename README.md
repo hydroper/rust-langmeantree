@@ -28,7 +28,6 @@ Steps after parsing:
   * [x] 3.4 Contribute a `#[non_exhaustive]` enumeration of submeanings whose name is `submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + meaning_name` at the `__data__` module.
   * [x] 3.5. Define the data structure `__data__::M` at the `__data__` module output, containing all field output.
   * [x] 3.6 Define the structure `M`
-    * [ ] Finish contravariance implementation
   * [ ] 3.7 Define the constructor
     * [ ] 3.7.1 Define the constructor *initializer* code as an instance `__sm__ctor()` method
     * [ ] 3.7.2 Prepend an `arena: &MeaningArena` parameter to the constructor's input (not to the `__sm__ctor()` method).

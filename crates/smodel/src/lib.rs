@@ -22,26 +22,7 @@ impl<T> Arena<T> {
     }
 }
 
-pub struct MeanTreeError {
-    message: String,
+#[derive(Debug)]
+pub enum SModelError {
+    Contravariant,
 }
-
-impl MeanTreeError {
-    pub fn new(message: &str) -> Self {
-        Self { message: message.into() }
-    }
-}
-
-impl Display for MeanTreeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.message)
-    }
-}
-
-impl Debug for MeanTreeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        <Self as Display>::fmt(self, f)
-    }
-}
-
-impl Error for MeanTreeError {}
