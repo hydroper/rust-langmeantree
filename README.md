@@ -2,39 +2,7 @@
 
 SModel (Semantic Modeling) for Rust provides an intuitive way to describe semantic symbols of a language using dynamic dispatches and hierarchy definitions using an arena that allows for circular references.
 
-*Note: this crate is not yet implemented.*
-
-## To do
-
-Reference links:
-
-<!--
-- https://github.com/hydroper/rust-class/blob/master/crates/oop_inheritance_proc/src/lib.rs
--->
-
-- https://docs.rs/syn/latest/syn/
-- https://docs.rs/proc-macro2/latest/proc_macro2/
-- https://docs.rs/quote/latest/quote/
-
-Steps after parsing:
-
-* [x] Define `Symbol` in a semantic model using an arena and a factory
-* [x] 1. Output `type ArenaName = ::smodel::Arena<#DATA::Meaning>;`
-* [x] 2. Traverse all meanings in a first pass
-* [ ] 3. Traverse each meaning
-  * [x] 3.1 Write out the base data accessor
-  * [x] 3.2 Traverse each field
-  * [x] 3.3 Contribute a `#DATA_VARIANT_FIELD` field to `#DATA::M` holding the enumeration of submeanings.
-  * [x] 3.4 Contribute a `#[non_exhaustive]` enumeration of submeanings whose name is `submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + meaning_name` at the `#DATA` module.
-  * [x] 3.5. Define the data structure `#DATA::M` at the `#DATA` module output, containing all field output.
-  * [x] 3.6 Define the structure `M`
-  * [x] 3.7 Define the constructor
-  * [x] 3.8 Traverse each method
-  * [x] 3.9 Traverse each method
-  * [x] 3.10 Contribute a `to::<T>()` method
-  * [x] 3.11 Contribute an `is::<T>()` method
-  * [x] 3.12 Output the code of all methods to an `impl` block for the meaning data type.
-* [ ] 4. Output the `mod #DATA { use super::*; ... }` module with its respective contents
+*Note: this crate is almost implemented; just fixing bugs.*
 
 ## Definition order
 
