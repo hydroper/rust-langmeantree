@@ -105,11 +105,11 @@ impl<K, V> Extend<(K, V)> for SharedMap<K, V> where K: Eq + Hash {
     }
 }
 
-pub macro shared_map {
+macro_rules! shared_map {
     ($($key:expr => $value:expr),*) => {
         SharedMap::from([$(($key, $value)),*])
-    },
+    };
     ($($key:expr => $value:expr),+ ,) => {
         SharedMap::from([$(($key, $value)),+])
-    },
+    };
 }
