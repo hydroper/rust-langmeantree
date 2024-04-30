@@ -74,7 +74,7 @@ Fields are always private to the meaning, therefore there are no attributes; the
 
 It is recommended for fields to always start with a underscore `_`, and consequently using accesses such as `_x()`, or `set__x(v)`.
 
-Then, you would implement methods that override other methods in a base meaning, allowing for an *unified* data type that supports methods that operate on more than one variant.
+Then, you would implement methods that may be overriden by subtype meanings in a base meaning, allowing for an *unified* data type that supports methods that operate on more than one variant.
 
 ## Shared containers
 
@@ -93,10 +93,10 @@ The constructor is translated to a static `new` method.
 
 The constructor contains a local `self` variable whose data type is the instance of that meaning.
 
-## Submeanings
+## Subtypes
 
-* `meaning.is::<T>()` tests whether `meaning` is a `T` submeaning.
-* `meaning.to::<T>()` converts to the `T` meaning, returning `Ok(m)` or `Err`. It may be a contravariant conversion.
+* `meaning.is::<T>()` tests whether `meaning` is a `T` subtype.
+* `meaning.to::<T>()` converts to the `T` subtype, returning `Ok(m)` or `Err`. It may be a contravariant conversion.
 * `meaning.into()` is a covariant conversion.
 
 ## Super expression
