@@ -365,7 +365,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
             pub #data_variant_field_id: #submeaning_enum,
         });
 
-        // 3.4. Contribute a #[non_exhaustive] enumeration of submeanings at the `#DATA` module.
+        // 3.4. Contribute an enumeration of submeanings at the `#DATA` module.
         let mut variants: Vec<proc_macro2::TokenStream> = vec![];
         for submeaning in meaning.submeanings().iter() {
             let sn = submeaning.name();
@@ -374,7 +374,6 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         let data_variant_no_submeaning = Ident::new(DATA_VARIANT_NO_SUBMEANING, Span::call_site());
         variants.push(data_variant_no_submeaning.to_token_stream());
         host.data_output.extend(quote! {
-            #[non_exhaustive]
             pub enum #submeaning_enum {
                 #(#variants),*
             }
@@ -383,7 +382,6 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         // 3.5. Define the data structure #DATA::M at the #DATA module output,
         // containing all field output.
         host.data_output.extend(quote! {
-            #[non_exhaustive]
             pub struct #meaning_name_id {
                 #field_output
             }
