@@ -54,6 +54,10 @@ impl ProcessingStep3_8 {
                 if list.path.to_token_stream().to_string() == "doc" {
                     doc_attr = Some(attr.clone());
                 }
+            } else if let Meta::NameValue(name_value) = &attr.meta {
+                if name_value.path.to_token_stream().to_string() == "doc" {
+                    doc_attr = Some(attr.clone());
+                }
             } else if let Meta::Path(p) = &attr.meta {
                 if p.to_token_stream().to_string() == "inheritdoc" {
                     inheritdoc_index = Some(i);

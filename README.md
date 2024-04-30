@@ -108,3 +108,5 @@ The `super.f()` expression is supported by preprocessing the token sequence of a
 ## Inheriting documentation
 
 Use the `#[inheritdoc]` attribute to inherit the RustDoc comment of an overriden method.
+
+> Note: the `inheritdoc` attribute is not working for some reason. Do not rely on it for now.
