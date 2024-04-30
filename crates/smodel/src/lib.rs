@@ -97,7 +97,6 @@ mod test {
         let arena = MeaningArena::new();
 
         let meaning = FooBarMeaning::new(&arena);
-        meaning.name();
         let base_meaning: Meaning = meaning.into();
         assert_eq!("FooBar", base_meaning.name());
         assert_eq!(true, base_meaning.is::<FooMeaning>());
