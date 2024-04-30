@@ -399,10 +399,20 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         for method in meaning_node.methods.iter() {
             ProcessingStep3_8().exec(&mut host, method, &meaning);
         }
+    }
 
-        // 3.9. Traverse each method
+    // 4. Traverse each meaning.
+    for meaning_node in meanings.iter() {
+        let Some(meaning) = host.semantics.get(meaning_node) else {
+            continue;
+        };
+
+        let meaning_name = meaning.name();
+        let meaning_name_id = Ident::new(&meaning_name, Span::call_site());
+
+        // 4.1. Traverse each method
         for method in meaning_node.methods.iter() {
-            ProcessingStep3_9().exec(&mut host, method, &meaning);
+            ProcessingStep4_1().exec(&mut host, method, &meaning);
         }
 
         // * Contribute a `to::<T: TryFrom<M>>()` method.
@@ -428,7 +438,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
     let data_output = host.data_output;
 
-    // 4. Output the `mod #DATA { use super::*; ... }` module with its respective contents
+    // 5. Output the `mod #DATA { use super::*; ... }` module with its respective contents
     host.output.extend::<TokenStream>(quote! {
         #[allow(non_camel_case_types)]
         mod #data_id {

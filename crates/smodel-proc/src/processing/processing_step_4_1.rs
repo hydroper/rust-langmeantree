@@ -1,8 +1,8 @@
 use crate::*;
 
-pub struct ProcessingStep3_9();
+pub struct ProcessingStep4_1();
 
-impl ProcessingStep3_9 {
+impl ProcessingStep4_1 {
     // Process a method
     pub fn exec(&self, host: &mut SModelHost, node: &Rc<MeaningMethod>, meaning: &Symbol) {
         // Skip if it is not mapped to an instance method slot.
@@ -52,7 +52,7 @@ impl ProcessingStep3_9 {
         let mut out = proc_macro2::TokenStream::new();
         let mut first = true;
         for (submeaning, logic) in mapping.borrow().iter() {
-            let submeaning_name = submeaning.name();
+            let submeaning_name = Ident::new(&submeaning.name(), Span::call_site());
             if !first {
                 out.extend(quote! { else });
             }

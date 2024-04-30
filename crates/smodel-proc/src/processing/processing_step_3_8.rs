@@ -298,8 +298,10 @@ impl ProcessingStep3_8 {
         layers.push_str(&")".repeat(parens));
 
         let new_mapping = Rc::new(OverrideLogicMapping::new());
+        let layers = proc_macro2::TokenStream::from_str(&layers).unwrap();
+        let method_name_id = Ident::new(&method_name, Span::call_site());
         new_mapping.set_override_code(Some(quote! {
-            return #layers.#method_name(#input_args);
+            return #layers.#method_name_id(#input_args);
         }));
         override_logic_mapping.set(target_meaning.clone(), new_mapping.clone());
     }
