@@ -127,6 +127,10 @@ impl ProcessingStep3_8 {
                 if list.path.to_token_stream().to_string() == "doc" {
                     indices.push(i);
                 }
+            } else if let Meta::NameValue(name_value) = &attr.meta {
+                if name_value.path.to_token_stream().to_string() == "doc" {
+                    indices.push(i);
+                }
             }
             i += 1;
         }
