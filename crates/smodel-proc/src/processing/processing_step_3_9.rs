@@ -38,6 +38,7 @@ impl ProcessingStep3_9 {
         // invoking `self.#nondispatch_name(#input_args)` at the end of the method body,
         // to the `impl` output.
         let dynamic_dispatch = self.generate_dynamic_dispatch(slot.override_logic_mapping());
+
         meaning.method_output().borrow_mut().extend(quote! {
             #(#attr)*
             #vis fn #name #(#type_params)*(&self, #inputs) #result_annotation #where_clause {
@@ -60,10 +61,8 @@ impl ProcessingStep3_9 {
                 if let Some(code) = logic.override_code() {
                     d1.extend(code);
                 }
-            } else {
-                if let Some(code) = logic.override_code() {
-                    d1.extend(quote! { else { #code } });
-                }
+            } else if let Some(code) = logic.override_code() {
+                d1.extend(quote! { else { #code } });
             }
             out.extend(quote! {
                 if self.is::<#submeaning_name>() {

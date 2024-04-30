@@ -70,5 +70,12 @@ mod test {
                 }
             }
         }
+
+
+        let arena = MeaningArena::new();
+        let meaning = FooMeaning::new(&arena);
+        let base_meaning: Meaning = meaning.into();
+        println!("{}", base_meaning.m());
+        println!("{}", base_meaning.is::<FooMeaning>());
     }
 }
