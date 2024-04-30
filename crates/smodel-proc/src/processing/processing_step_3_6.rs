@@ -101,14 +101,13 @@ impl ProcessingStep3_6 {
     /// * `base` is assumed to be a `Rc<#DATA::M>` value.
     /// * `original_base` is assumed to be a `Weak<#DATA::FirstM>` value.
     fn match_contravariant(&self, asc_meaning_list: &[Symbol], meaning_index: usize, base: &str, original_base: &str) -> String {
-        let inherited = if asc_meaning_list.len() - meaning_index == 1 {
-            None
+        let (meaning, inherited) = if meaning_index + 1 >= asc_meaning_list.len() {
+            (asc_meaning_list[meaning_index].clone(), None)
         } else {
-            Some(asc_meaning_list[meaning_index].clone())
+            (asc_meaning_list[meaning_index + 1].clone(), Some(asc_meaning_list[meaning_index].clone()))
         };
-        let meaning = asc_meaning_list[meaning_index + if inherited.is_some() { 1 } else { 0 }].clone();
 
-        let Some(inherited) = meaning.inherits() else {
+        let Some(inherited) = inherited else {
             return Symbol::create_layers_over_weak_root(original_base, asc_meaning_list);
         };
         format!("(if {DATA}::{}::{}(_o) = &{base}.{DATA_VARIANT_FIELD} {{ {} }} else {{ Err(::smodel::SModelError::Contravariant) }})",

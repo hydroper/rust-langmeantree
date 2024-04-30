@@ -132,7 +132,7 @@ impl Parse for Meaning {
         let _ = braced!(braced_content in input);
 
         while !braced_content.is_empty() {
-            if input.peek(Token![let]) {
+            if braced_content.peek(Token![let]) {
                 fields.push(Rc::new(parse_meaning_field(&braced_content)?));
             } else {
                 match parse_meaning_method(&braced_content, &name_str)? {
