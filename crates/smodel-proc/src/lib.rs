@@ -1,5 +1,4 @@
 #![feature(proc_macro_diagnostic)]
-#![feature(decl_macro)]
 
 mod shared_array;
 use proc_macro2::Span;
