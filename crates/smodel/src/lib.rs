@@ -47,24 +47,63 @@ mod test {
                 pub fn name(&self) -> String {
                     "".into()
                 }
+
+                pub fn base_example(&self) -> String {
+                    "from base".into()
+                }
             }
         
             struct FooMeaning: Meaning {
                 pub fn FooMeaning() {
                     super();
                 }
-        
+
                 pub override fn name(&self) -> String {
                     "Foo".into()
+                }
+            }
+        
+            struct FooBarMeaning: FooMeaning {
+                pub fn FooBarMeaning() {
+                    super();
+                }
+
+                pub override fn name(&self) -> String {
+                    "FooBar".into()
+                }
+
+                pub override fn base_example(&self) -> String {
+                    format!("from bar; {}", super.base_example())
+                }
+            }
+        
+            struct FooQuxMeaning: FooMeaning {
+                pub fn FooQuxMeaning() {
+                    super();
+                }
+
+                pub override fn name(&self) -> String {
+                    "FooQux".into()
                 }
             }
         }
 
 
         let arena = MeaningArena::new();
-        let meaning = FooMeaning::new(&arena);
+
+        let meaning = FooBarMeaning::new(&arena);
         let base_meaning: Meaning = meaning.into();
-        println!("{}", base_meaning.name());
-        println!("{}", base_meaning.is::<FooMeaning>());
+        assert_eq!("FooBar", base_meaning.name());
+        assert_eq!(true, base_meaning.is::<FooMeaning>());
+        assert_eq!(true, base_meaning.is::<FooBarMeaning>());
+        assert_eq!(false, base_meaning.is::<FooQuxMeaning>());
+        assert_eq!("from bar; from base", base_meaning.base_example());
+
+        let meaning = FooQuxMeaning::new(&arena);
+        let base_meaning: Meaning = meaning.into();
+        assert_eq!("FooQux", base_meaning.name());
+        assert_eq!(true, base_meaning.is::<FooMeaning>());
+        assert_eq!(false, base_meaning.is::<FooBarMeaning>());
+        assert_eq!(true, base_meaning.is::<FooQuxMeaning>());
     }
 }
