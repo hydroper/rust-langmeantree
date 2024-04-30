@@ -1,9 +1,12 @@
 #![feature(proc_macro_diagnostic)]
 
-mod shared_array;
 use proc_macro2::Span;
+
+#[macro_use]
+mod shared_array;
 use shared_array::*;
 
+#[macro_use]
 mod shared_map;
 use shared_map::*;
 

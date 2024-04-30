@@ -77,8 +77,8 @@ impl Hash for Symbol {
     }
 }
 
-macro access {
-    ($symbol:expr) => { $symbol.0.upgrade().unwrap().as_ref() },
+macro_rules! access {
+    ($symbol:expr) => { $symbol.0.upgrade().unwrap().as_ref() };
 }
 
 impl Symbol {
