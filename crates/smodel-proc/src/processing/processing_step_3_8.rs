@@ -85,7 +85,7 @@ impl ProcessingStep3_8 {
                     node.attributes.borrow_mut().push(attr);
                 }
             } else {
-                name.span().unwrap().error(format!("No inherited method '{}'.", slot.name())).emit();
+                name.span().unwrap().error(format!("No method '{}' in base.", slot.name())).emit();
             }
         }
 
@@ -108,7 +108,7 @@ impl ProcessingStep3_8 {
             if let Some(base_method) = meaning.lookup_method_in_base_meaning(&slot.name()) {
                 self.perform_override(&slot.name(), base_method.override_logic_mapping(), &base_method.defined_in(), meaning, &input_args);
             } else {
-                name.span().unwrap().error(format!("Found no method '{}' in base.", slot.name())).emit();
+                name.span().unwrap().error(format!("No method '{}' in base.", slot.name())).emit();
             }
         }
 
@@ -229,7 +229,7 @@ impl ProcessingStep3_8 {
 
                     // Lookup for a method in one of the base meanings.
                     let Some(base_method) = meaning.lookup_method_in_base_meaning(&id.to_string()) else {
-                        id.span().unwrap().error(format!("Found no method '{}' at any base type.", id.to_string())).emit();
+                        id.span().unwrap().error(format!("No method '{}' in base.", id.to_string())).emit();
                         continue;
                     };
 

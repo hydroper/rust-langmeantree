@@ -42,15 +42,10 @@ mod test {
         
                 pub fn Meaning() {
                     super();
-                    println!("{}", self.m());
                 }
         
-                pub fn m(&self) -> String {
+                pub fn name(&self) -> String {
                     "".into()
-                }
-        
-                pub fn m1(&self) {
-                    println!("base");
                 }
             }
         
@@ -59,14 +54,8 @@ mod test {
                     super();
                 }
         
-                pub override fn m(&self) -> String {
+                pub override fn name(&self) -> String {
                     "Foo".into()
-                }
-        
-                pub override fn m1(&self) {
-                    if true {
-                        super.m1();
-                    }
                 }
             }
         }
@@ -75,7 +64,7 @@ mod test {
         let arena = MeaningArena::new();
         let meaning = FooMeaning::new(&arena);
         let base_meaning: Meaning = meaning.into();
-        println!("{}", base_meaning.m());
+        println!("{}", base_meaning.name());
         println!("{}", base_meaning.is::<FooMeaning>());
     }
 }

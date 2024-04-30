@@ -16,7 +16,7 @@ impl ProcessingStep2 {
                 slot.set_inherits(Some(inherited_meaning));
                 inherited_meaning.submeanings().push(slot.clone());
             } else {
-                inherits.span().unwrap().error(format!("Meaning '{}' not found.", inherits.to_string())).emit();
+                inherits.span().unwrap().error(format!("Data type '{}' not found.", inherits.to_string())).emit();
                 return;
             }
         }

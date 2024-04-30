@@ -2,10 +2,9 @@
 
 SModel (Semantic Modeling) for Rust provides an intuitive way to describe semantic symbols of a language using dynamic dispatches and hierarchy definitions using an arena that allows for circular references.
 
-> Note: this crate is almost implemented; just fixing two bugs.
->
-> * [ ] Dynamic dispatch logic not prepended to methods
-> * [ ] Maybe `TryFrom<M>` should also be implemented for submeanings of submeanings.
+## Bugs to fix
+
+* [ ] Dynamic dispatch logic not prepended to methods
 
 ## Definition order
 

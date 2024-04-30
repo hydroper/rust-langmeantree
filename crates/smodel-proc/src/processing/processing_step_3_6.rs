@@ -77,14 +77,13 @@ impl ProcessingStep3_6 {
 
         // Output a TryFrom<M> for SubmeaningM implementation (contravariant conversion)
         for sm in meaning.submeanings().iter() {
-            self.contravariance(host, base_accessor, meaning, &sm, smodel_path);
+            self.contravariance(host, &base_accessor.replacen("self", "v", 1), meaning, &sm, smodel_path);
         }
     }
 
     fn contravariance(&self, host: &mut SModelHost, base_accessor: &str, base_meaning: &Symbol, submeaning: &Symbol, smodel_path: &proc_macro2::TokenStream) {
         let base_meaning_name = Ident::new(&base_meaning.name(), Span::call_site());
         let submeaning_name = Ident::new(&submeaning.name(), Span::call_site());
-        let base_accessor = base_accessor.replacen("self", "v", 1);
         let m = proc_macro2::TokenStream::from_str(&self.match_contravariant(&submeaning.asc_meaning_list(), 0, &format!("{base_accessor}.upgrade().unwrap()"), &base_accessor, smodel_path)).unwrap();
 
         host.output.extend::<TokenStream>(quote! {
@@ -95,6 +94,10 @@ impl ProcessingStep3_6 {
                 }
             }
         }.try_into().unwrap());
+
+        for sm1 in submeaning.submeanings().iter() {
+            self.contravariance(host, &base_accessor.replacen("self", "v", 1), base_meaning, &sm1, smodel_path);
+        }
     }
 
     /// Matches a contravariant meaning.
