@@ -357,12 +357,12 @@ pub fn smodel(input: TokenStream) -> TokenStream {
             let sn = submeaning.name();
             variants.push(proc_macro2::TokenStream::from_str(&format!("{sn}(::std::rc::Rc<{sn}>)")).unwrap());
         }
-        let data_variant_no_submeaning = Ident::new(DATA_VARIANT_NO_SUBMEANING, Span::call_site());;
+        let data_variant_no_submeaning = Ident::new(DATA_VARIANT_NO_SUBMEANING, Span::call_site());
+        variants.push(data_variant_no_submeaning.to_token_stream());
         host.data_output.extend(quote! {
             #[non_exhaustive]
             pub enum #submeaning_enum {
                 #(#variants),*
-                #data_variant_no_submeaning,
             }
         });
 
@@ -416,6 +416,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
     // 4. Output the `mod #DATA { use super::*; ... }` module with its respective contents
     host.output.extend::<TokenStream>(quote! {
+        #[allow(non_camel_case_types)]
         mod #data_id {
             use super::*;
 

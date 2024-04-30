@@ -17,14 +17,15 @@ impl ProcessingStep3_2 {
 
         // 3. Contribute a field to the #DATA::M structure.
         let field_name = slot.name();
+        let field_name_id = Ident::new(&field_name, Span::call_site());
         let field_type = slot.field_type();
         if slot.is_ref() {
             field_output.extend(quote! {
-                pub #field_name: ::std::cell::RefCell<#field_type>,
+                pub #field_name_id: ::std::cell::RefCell<#field_type>,
             });
         } else {
             field_output.extend(quote! {
-                pub #field_name: ::std::cell::Cell<#field_type>,
+                pub #field_name_id: ::std::cell::Cell<#field_type>,
             });
         }
 
