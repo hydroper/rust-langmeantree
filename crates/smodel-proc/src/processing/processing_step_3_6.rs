@@ -96,7 +96,7 @@ impl ProcessingStep3_6 {
         }.try_into().unwrap());
 
         for sm1 in submeaning.submeanings().iter() {
-            self.contravariance(host, &base_accessor.replacen("self", "v", 1), base_meaning, &sm1, smodel_path);
+            self.contravariance(host, base_accessor, base_meaning, &sm1, smodel_path);
         }
     }
 
