@@ -38,10 +38,11 @@ impl ProcessingStep3_6 {
                 }
             }.try_into().unwrap());
         } else {
+            let data_id = Ident::new(DATA, Span::call_site());
             host.output.extend::<TokenStream>(quote! {
                 #(#attributes)*
                 #[derive(Clone)]
-                #visi struct #meaning_name(::std::rc::Weak<#DATA::#meaning_name>);
+                #visi struct #meaning_name(::std::rc::Weak<#data_id::#meaning_name>);
 
                 impl PartialEq for #meaning_name {
                     fn eq(&self, other: &Self) -> bool {
@@ -88,8 +89,8 @@ impl ProcessingStep3_6 {
 
         host.output.extend::<TokenStream>(quote! {
             impl TryFrom<#base_meaning_name> for #submeaning_name {
-                type Err = ::smodel::SModelError;
-                fn try_from(v: #base_meaning_name) -> Result<Self, Self::Err> {
+                type Error = ::smodel::SModelError;
+                fn try_from(v: #base_meaning_name) -> Result<Self, Self::Error> {
                     #m
                 }
             }
@@ -108,7 +109,7 @@ impl ProcessingStep3_6 {
         };
 
         let Some(inherited) = inherited else {
-            return Symbol::create_layers_over_weak_root(original_base, asc_meaning_list);
+            return format!("Ok({})", Symbol::create_layers_over_weak_root(original_base, asc_meaning_list));
         };
         format!("(if {DATA}::{}::{}(_o) = &{base}.{DATA_VARIANT_FIELD} {{ {} }} else {{ Err(::smodel::SModelError::Contravariant) }})",
             DATA_VARIANT_PREFIX.to_owned() + &inherited.name(),

@@ -245,11 +245,12 @@ impl ProcessingStep3_8 {
                         }
                         m = m1;
                     }
+                    let base = proc_macro2::TokenStream::from_str(&base).unwrap();
 
                     // Replace super.m(...) by BaseM::#nondispatch_name_id(&#base, ...)
                     let nondispatch_name = format!("{NONDISPATCH_PREFIX}{}", base_method.name());
                     let nondispatch_name_id = Ident::new(&nondispatch_name, Span::call_site());
-                    let base_meaning = base_method.defined_in().name();
+                    let base_meaning = Ident::new(&base_method.defined_in().name(), Span::call_site());
                     let super_args = self.process_super_expression(g.stream(), meaning, method_slot);
                     output.extend(quote! {
                         #base_meaning::#nondispatch_name_id(&#base, #super_args)

@@ -287,7 +287,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         meanings[0].name.span().unwrap().error("First meaning must inherit no any other meaning.").emit();
         return TokenStream::new();
     }
-    let base_meaning_name = meanings[0].name.to_string();
+    let base_meaning_name = Ident::new(&meanings[0].name.to_string(), Span::call_site());
 
     // 3. Ensure all other meanings inherit another one.
 
@@ -300,9 +300,11 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
     // # Processing steps
 
+    let data_id = Ident::new(DATA, Span::call_site());
+
     // 1. Output the arena type.
     host.output.extend::<TokenStream>(quote! {
-        type #arena_type_name = ::smodel::Arena<#DATA::#base_meaning_name>;
+        type #arena_type_name = ::smodel::Arena<#data_id::#base_meaning_name>;
     }.try_into().unwrap());
 
     // 2. Traverse each meaning in a first pass.
@@ -414,7 +416,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
     // 4. Output the `mod #DATA { use super::*; ... }` module with its respective contents
     host.output.extend::<TokenStream>(quote! {
-        mod #DATA {
+        mod #data_id {
             use super::*;
 
             #data_output
