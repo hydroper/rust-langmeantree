@@ -29,6 +29,7 @@ impl ProcessingStep3_9 {
 
         // Define `nondispatch_name` as nondispatch prefix plus method name.
         let nondispatch_name = format!("{NONDISPATCH_PREFIX}{}", slot.name());
+        let nondispatch_name_id = Ident::new(&nondispatch_name, Span::call_site());
 
         // Define input argument list
         let input_args = convert_function_input_to_arguments(&inputs);
@@ -41,7 +42,7 @@ impl ProcessingStep3_9 {
             #(#attr)*
             #vis fn #name #(#type_params)*(&self, #inputs) #result_annotation #where_clause {
                 #dynamic_dispatch
-                self.#nondispatch_name(#input_args)
+                self.#nondispatch_name_id(#input_args)
             }
         });
     }

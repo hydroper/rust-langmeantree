@@ -91,6 +91,7 @@ impl ProcessingStep3_8 {
 
         // Define `nondispatch_name` as nondispatch prefix plus method name.
         let nondispatch_name = format!("{NONDISPATCH_PREFIX}{}", slot.name());
+        let nondispatch_name_id = Ident::new(&nondispatch_name, Span::call_site());
 
         // Define input argument list
         let input_args = convert_function_input_to_arguments(&inputs);
@@ -131,7 +132,7 @@ impl ProcessingStep3_8 {
 
         meaning.method_output().borrow_mut().extend(quote! {
             #(#attr)*
-            fn #nondispatch_name #(#type_params)*(&self, #inputs) #result_annotation #where_clause {
+            fn #nondispatch_name_id #(#type_params)*(&self, #inputs) #result_annotation #where_clause {
                 #statements
             }
         });
@@ -245,12 +246,13 @@ impl ProcessingStep3_8 {
                         m = m1;
                     }
 
-                    // Replace super.m(...) by BaseM::#nondispatch_name(&#base, ...)
+                    // Replace super.m(...) by BaseM::#nondispatch_name_id(&#base, ...)
                     let nondispatch_name = format!("{NONDISPATCH_PREFIX}{}", base_method.name());
+                    let nondispatch_name_id = Ident::new(&nondispatch_name, Span::call_site());
                     let base_meaning = base_method.defined_in().name();
                     let super_args = self.process_super_expression(g.stream(), meaning, method_slot);
                     output.extend(quote! {
-                        #base_meaning::#nondispatch_name(&#base, #super_args)
+                        #base_meaning::#nondispatch_name_id(&#base, #super_args)
                     });
                 },
                 proc_macro2::TokenTree::Group(g) => {

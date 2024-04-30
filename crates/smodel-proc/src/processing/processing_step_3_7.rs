@@ -17,12 +17,15 @@ impl ProcessingStep3_7 {
         let attr = node.map(|node| node.attributes.clone()).unwrap_or(vec![]);
         let vis = node.map(|node| node.visibility.to_token_stream()).unwrap_or(proc_macro2::TokenStream::new());
 
-        // Define the the instance `#CTOR_INIT_NAME` method,
+        let ctor_init_name_id = Ident::new(CTOR_INIT_NAME, Span::call_site());
+        let arena_type_name_id = Ident::new(arena_type_name, Span::call_site());
+
+        // Define the the instance `#ctor_init_name_id` method,
         // containing everything but `super()` and structure initialization.
         let statements = node.map(|node| node.statements.clone()).unwrap_or(vec![]);
         meaning.method_output().borrow_mut().extend(quote! {
             #(#attr)*
-            fn #CTOR_INIT_NAME #(#type_params)*(&self, #input) #where_clause {
+            fn #ctor_init_name_id #(#type_params)*(&self, #input) #where_clause {
                 #(#statements)*
             }
         });
@@ -34,39 +37,39 @@ impl ProcessingStep3_7 {
         // (notice the meaning layers) allocation initializing all meaning variants's fields
         // with their default values.
         let initlayer1 = self.init_data(asc_meaning_list, 0);
-        let initlayer2 = Symbol::create_layers_over_weak_root(&format!("arena.allocate({})", initlayer1.to_string()), asc_meaning_list);
+        let initlayer2 = proc_macro2::TokenStream::from_str(&Symbol::create_layers_over_weak_root(&format!("arena.allocate({})", initlayer1.to_string()), asc_meaning_list)).unwrap();
         m_new_out.extend::<TokenStream>(quote! {
             let this = #initlayer2;
         }.try_into().unwrap());
 
         // If the meaning inherits another meaning:
         //
-        // * At `M::new`, invoke `InheritedM::#CTOR_INIT_NAME(&this.0, ...super_arguments)`,
+        // * At `M::new`, invoke `InheritedM::#ctor_init_name_id(&this.0, ...super_arguments)`,
         //   passing all `super(...)` arguments.
         if let Some(inherited_m) = meaning.inherits() {
-            let inherited_m_name = inherited_m.name();
+            let inherited_m_name = Ident::new(&inherited_m.name(), Span::call_site());
             let super_arguments = node.map(|node| node.super_arguments.clone()).unwrap_or(Punctuated::new());
             m_new_out.extend::<TokenStream>(quote! {
-                #inherited_m_name::#CTOR_INIT_NAME(&this.0, #super_arguments);
+                #inherited_m_name::#ctor_init_name_id(&this.0, #super_arguments);
             }.try_into().unwrap());
         }
 
-        // * Output a `this.#CTOR_INIT_NAME(...arguments);` call to `M::new`.
+        // * Output a `this.#ctor_init_name_id(...arguments);` call to `M::new`.
         // * Output a `this` return to `M::new`.
         let input_args = convert_function_input_to_arguments(&input);
         m_new_out.extend::<TokenStream>(quote! {
-            this.#CTOR_INIT_NAME(#input_args);
+            this.#ctor_init_name_id(#input_args);
             this
         }.try_into().unwrap());
 
         // Output the constructor as a static `new` method (`M::new`) with
-        // a prepended `arena: &#arena_type_name` parameter.
+        // a prepended `arena: &#arena_type_name_id` parameter.
 
         let m_new_out: proc_macro2::TokenStream = m_new_out.into();
 
         meaning.method_output().borrow_mut().extend(quote! {
             #(#attr)*
-            #vis fn new #(#type_params)*(arena: &#arena_type_name, #input) -> Self #where_clause {
+            #vis fn new #(#type_params)*(arena: &#arena_type_name_id, #input) -> Self #where_clause {
                 #m_new_out
             }
         });
@@ -77,23 +80,29 @@ impl ProcessingStep3_7 {
         let meaning_name = meaning.name();
         let mut fields = proc_macro2::TokenStream::new();
         for (name, field) in meaning.fields().borrow().iter() {
+            let name_id = Ident::new(name, Span::call_site());
             let fv = field.field_init();
             fields.extend(quote! {
-                #name: #fv,
+                #name_id: #fv,
             });
         }
-        let submeaning_enum = format!("{DATA}::{DATA_VARIANT_PREFIX}{meaning_name}");
+        let data_variant_no_submeaning = proc_macro2::TokenStream::from_str(DATA_VARIANT_NO_SUBMEANING).unwrap();
+        let submeaning_enum = proc_macro2::TokenStream::from_str(&format!("{DATA}::{DATA_VARIANT_PREFIX}{meaning_name}")).unwrap();
         let variant = if meaning_index + 1 < asc_meaning_list.len() {
             let next_m = asc_meaning_list[meaning_index + 1].name();
+            let next_m = Ident::new(&next_m, Span::call_site());
             let i = self.init_data(asc_meaning_list, meaning_index + 1);
             quote! { #submeaning_enum::#next_m(::std::rc::Rc::new(#i)) }
         } else {
-            quote! { #submeaning_enum::#DATA_VARIANT_NO_SUBMEANING }
+            quote! { #submeaning_enum::#data_variant_no_submeaning }
         };
+        let data_variant_field = Ident::new(DATA_VARIANT_FIELD, Span::call_site());
+        let data_id = Ident::new(DATA, Span::call_site());
+        let meaning_name_id = Ident::new(&meaning_name, Span::call_site());
         quote! {
-            #DATA::#meaning_name {
+            #data_id::#meaning_name_id {
                 #fields
-                #DATA_VARIANT_FIELD: #variant
+                #data_variant_field: #variant
             }
         }
     }

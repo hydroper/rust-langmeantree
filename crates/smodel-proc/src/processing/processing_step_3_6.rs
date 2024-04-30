@@ -4,7 +4,7 @@ pub struct ProcessingStep3_6();
 
 impl ProcessingStep3_6 {
     pub fn exec(&self, host: &mut SModelHost, node: &Rc<Meaning>, meaning: &Symbol, base_accessor: &str) {
-        let meaning_name = meaning.name();
+        let meaning_name = Ident::new(&meaning.name(), Span::call_site());
         let attributes = node.attributes.clone();
         let visi = node.visibility.clone();
 
@@ -24,7 +24,7 @@ impl ProcessingStep3_6 {
         //
         // if there is an inherited meaning.
         if let Some(inherits) = meaning.inherits() {
-            let inherited_name = inherits.name();
+            let inherited_name = Ident::new(&inherits.name(), Span::call_site());
             host.output.extend::<TokenStream>(quote! {
                 #(#attributes)*
                 #[derive(Clone, PartialEq, Hash)]
@@ -50,7 +50,6 @@ impl ProcessingStep3_6 {
                 }
 
                 impl ::std::hash::Hash for #meaning_name {
-                    /// Performs hashing of the symbol by reference.
                     fn hash<H: ::std::hash::Hasher>(&self, state: &mut H) {
                         self.0.as_ptr().hash(state)
                     }
@@ -62,11 +61,12 @@ impl ProcessingStep3_6 {
         let mut base = "self.0.0".to_owned();
         let mut m = meaning.clone();
         while let Some(m1) = m.inherits() {
-            let inherited_name = m1.name();
+            let inherited_name = Ident::new(&m1.name(), Span::call_site());
+            let base_tokens = proc_macro2::TokenStream::from_str(&base).unwrap();
             host.output.extend::<TokenStream>(quote! {
                 impl From<#meaning_name> for #inherited_name {
                     fn from(v: #meaning_name) -> Self {
-                        #inherited_name(#base.clone())
+                        #inherited_name(#base_tokens.clone())
                     }
                 }
             }.try_into().unwrap());
@@ -81,10 +81,10 @@ impl ProcessingStep3_6 {
     }
 
     fn contravariance(&self, host: &mut SModelHost, base_accessor: &str, base_meaning: &Symbol, submeaning: &Symbol) {
-        let base_meaning_name = base_meaning.name();
-        let submeaning_name = submeaning.name();
+        let base_meaning_name = Ident::new(&base_meaning.name(), Span::call_site());
+        let submeaning_name = Ident::new(&submeaning.name(), Span::call_site());
         let base_accessor = base_accessor.replacen("self", "v", 1);
-        let m = self.match_contravariant(&submeaning.asc_meaning_list(), 0, &format!("{base_accessor}.upgrade().unwrap()"), &base_accessor);
+        let m = proc_macro2::TokenStream::from_str(&self.match_contravariant(&submeaning.asc_meaning_list(), 0, &format!("{base_accessor}.upgrade().unwrap()"), &base_accessor)).unwrap();
 
         host.output.extend::<TokenStream>(quote! {
             impl TryFrom<#base_meaning_name> for #submeaning_name {

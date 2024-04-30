@@ -3,7 +3,7 @@ use crate::*;
 pub struct ProcessingStep3_2();
 
 impl ProcessingStep3_2 {
-    pub fn exec(&self, host: &mut SModelHost, meaning: &Symbol, field: &Rc<MeaningField>, base_accessor: &str, asc_meaning_list: &[Symbol], field_output: &mut TokenStream) {
+    pub fn exec(&self, host: &mut SModelHost, meaning: &Symbol, field: &Rc<MeaningField>, base_accessor: &str, asc_meaning_list: &[Symbol], field_output: &mut proc_macro2::TokenStream) {
         // 1. Create a FieldSlot.
         let slot = host.factory.create_field_slot(field.is_ref, field.name.to_string(), field.type_annotation.clone(), field.default_value.clone());
 
@@ -19,13 +19,13 @@ impl ProcessingStep3_2 {
         let field_name = slot.name();
         let field_type = slot.field_type();
         if slot.is_ref() {
-            field_output.extend::<TokenStream>(quote! {
+            field_output.extend(quote! {
                 pub #field_name: ::std::cell::RefCell<#field_type>,
-            }.try_into().unwrap());
+            });
         } else {
-            field_output.extend::<TokenStream>(quote! {
+            field_output.extend(quote! {
                 pub #field_name: ::std::cell::Cell<#field_type>,
-            }.try_into().unwrap());
+            });
         }
 
         // 4. Define accessors
@@ -33,21 +33,22 @@ impl ProcessingStep3_2 {
     }
 
     fn define_accessors(&self, _host: &mut SModelHost, meaning: &Symbol, slot: &Symbol, field_name: &str, field_type: &Type, base_accessor: &str, asc_meaning_list: &[Symbol]) {
-        let setter_name = format!("set_{}", field_name);
-        let fv = self.match_field(asc_meaning_list, 0, &format!("{base_accessor}.upgrade().unwrap()"), field_name);
+        let getter_name = Ident::new(&field_name, Span::call_site());
+        let setter_name = Ident::new(&format!("set_{}", field_name), Span::call_site());
+        let fv = proc_macro2::TokenStream::from_str(&self.match_field(asc_meaning_list, 0, &format!("{base_accessor}.upgrade().unwrap()"), field_name)).unwrap();
 
         if slot.is_ref() {
             meaning.method_output().borrow_mut().extend(quote! {
-                fn #field_name(&self) -> #field_type {
+                fn #getter_name(&self) -> #field_type {
                     #fv.borrow().clone()
                 }
                 fn #setter_name(&self, v: #field_type) {
-                    $fv.replace(v);
+                    #fv.replace(v);
                 }
             });
         } else {
             meaning.method_output().borrow_mut().extend(quote! {
-                fn #field_name(&self) -> #field_type {
+                fn #getter_name(&self) -> #field_type {
                     #fv.get()
                 }
 

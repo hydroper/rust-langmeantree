@@ -2,6 +2,7 @@
 #![feature(decl_macro)]
 
 mod shared_array;
+use proc_macro2::Span;
 use shared_array::*;
 
 mod shared_map;
@@ -33,6 +34,7 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use std::ops::Deref;
 use std::rc::{Rc, Weak};
+use std::str::FromStr;
 use by_address::ByAddress;
 
 /// Data module name.
@@ -315,8 +317,9 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         };
 
         let asc_meaning_list = meaning.asc_meaning_list();
-        let mut field_output = TokenStream::new();
+        let mut field_output = proc_macro2::TokenStream::new();
         let meaning_name = meaning.name();
+        let meaning_name_id = Ident::new(&meaning_name, Span::call_site());
 
         // 3.1. Write out the base data accessor
         //
@@ -340,31 +343,32 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
         // 3.3. Contribute a #DATA_VARIANT_FIELD field to #DATA::M
         // holding the enumeration of submeanings.
-        let submeaning_enum = DATA_VARIANT_PREFIX.to_owned() + &meaning_name;
-        field_output.extend::<TokenStream>(quote! {
-            pub #DATA_VARIANT_FIELD: #submeaning_enum,
-        }.try_into().unwrap());
+        let submeaning_enum = Ident::new(&(DATA_VARIANT_PREFIX.to_owned() + &meaning_name), Span::call_site());
+        let data_variant_field_id = Ident::new(DATA_VARIANT_FIELD, Span::call_site());
+        field_output.extend(quote! {
+            pub #data_variant_field_id: #submeaning_enum,
+        });
 
         // 3.4. Contribute a #[non_exhaustive] enumeration of submeanings at the `#DATA` module.
-        let mut variants: Vec<String> = vec![];
+        let mut variants: Vec<proc_macro2::TokenStream> = vec![];
         for submeaning in meaning.submeanings().iter() {
             let sn = submeaning.name();
-            variants.push(format!("{sn}(::std::rc::Rc<{sn}>)"));
+            variants.push(proc_macro2::TokenStream::from_str(&format!("{sn}(::std::rc::Rc<{sn}>)")).unwrap());
         }
+        let data_variant_no_submeaning = Ident::new(DATA_VARIANT_NO_SUBMEANING, Span::call_site());;
         host.data_output.extend(quote! {
             #[non_exhaustive]
             pub enum #submeaning_enum {
                 #(#variants),*
-                #DATA_VARIANT_NO_SUBMEANING,
+                #data_variant_no_submeaning,
             }
         });
 
         // 3.5. Define the data structure #DATA::M at the #DATA module output,
         // containing all field output.
-        let field_output = field_output.to_string();
         host.data_output.extend(quote! {
             #[non_exhaustive]
-            pub struct #meaning_name {
+            pub struct #meaning_name_id {
                 #field_output
             }
         });
@@ -388,10 +392,10 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         // * Contribute a `to::<T: TryFrom<M>>()` method.
         // * Contribute an `is::<T>()` method.
         meaning.method_output().borrow_mut().extend(quote! {
-            pub fn to::<T: TryFrom<#meaning_name>>(&self) -> Result<T, ::smodel::SModelError> {
+            pub fn to<T: TryFrom<#meaning_name_id>>(&self) -> Result<T, ::smodel::SModelError> {
                 T::try_from(self.clone())
             }
-            pub fn is::<T: TryFrom<#meaning_name>>(&self) -> bool {
+            pub fn is<T: TryFrom<#meaning_name_id>>(&self) -> bool {
                 T::try_from(self.clone()).is_ok()
             }
         });
@@ -400,7 +404,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
         // Output the code of all methods to an `impl` block for the meaning data type.
         host.output.extend::<TokenStream>(quote! {
-            impl #meaning_name {
+            impl #meaning_name_id {
                 #method_output
             }
         }.try_into().unwrap());
