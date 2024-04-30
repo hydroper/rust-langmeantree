@@ -124,11 +124,11 @@ impl<A> Extend<A> for SharedArray<A> {
     }
 }
 
-pub macro shared_array {
+macro_rules! shared_array {
     ($($element:expr),*) => {
         SharedArray::from([$($element),*])
-    },
+    };
     ($($element:expr),+ ,) => {
         SharedArray::from([$($element),+])
-    },
+    };
 }
