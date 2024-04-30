@@ -68,13 +68,22 @@ A field (a `let` declaration) has an optional `ref` modifier indicating whether 
 
 Fields have a pair of a getter (`fieldname()`) and a setter (`set_fieldname(value)`).
 
-For mutable hash maps or vectors, it is recommended to use a container that is cloned by reference and not by content.
+For mutable hash maps or vectors, it is recommended to use a *shared container* (see below) that is cloned by reference and not by content.
 
 Fields are always private to the meaning, therefore there are no attributes; the field definition always starts with the `let` keyword, without a RustDoc comment.
 
 It is recommended for fields to always start with a underscore `_`, and consequently using accesses such as `_x()`, or `set__x(v)`.
 
 Then, you would implement methods that override other methods in a base meaning, allowing for an *unified* data type that supports methods that operate on more than one variant.
+
+## Shared containers
+
+This crate provides two container data types that are cloned by reference, `SharedArray` and `SharedMap`, as well as `shared_array!` and `shared_map!` literals.
+
+* `SharedArray` is a reference-counted mutable vector.
+* `SharedMap` is a reference-counted mutable hash map.
+
+Refer to the crate documentation for usage details.
 
 ## Constructor
 

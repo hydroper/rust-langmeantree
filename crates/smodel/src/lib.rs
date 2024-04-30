@@ -1,6 +1,8 @@
 use std::{cell::RefCell, rc::{Rc, Weak}};
 use std::fmt::Debug;
 
+pub mod util;
+
 pub use smodel_proc::smodel;
 
 pub struct Arena<T> {
