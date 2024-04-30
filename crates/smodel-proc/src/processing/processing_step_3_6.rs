@@ -3,7 +3,7 @@ use crate::*;
 pub struct ProcessingStep3_6();
 
 impl ProcessingStep3_6 {
-    pub fn exec(&self, host: &mut SModelHost, node: &Rc<Meaning>, meaning: &Symbol, base_accessor: &str) {
+    pub fn exec(&self, host: &mut SModelHost, node: &Rc<Meaning>, meaning: &Symbol, base_accessor: &str, smodel_path: &proc_macro2::TokenStream) {
         let meaning_name = Ident::new(&meaning.name(), Span::call_site());
         let attributes = node.attributes.clone();
         let visi = node.visibility.clone();
@@ -59,7 +59,7 @@ impl ProcessingStep3_6 {
         }
 
         // Output From<M> for InheritedM implementation (covariant conversion)
-        let mut base = "self.0.0".to_owned();
+        let mut base = "v.0.0".to_owned();
         let mut m = meaning.clone();
         while let Some(m1) = m.inherits() {
             let inherited_name = Ident::new(&m1.name(), Span::call_site());
@@ -77,19 +77,19 @@ impl ProcessingStep3_6 {
 
         // Output a TryFrom<M> for SubmeaningM implementation (contravariant conversion)
         for sm in meaning.submeanings().iter() {
-            self.contravariance(host, base_accessor, meaning, &sm);
+            self.contravariance(host, base_accessor, meaning, &sm, smodel_path);
         }
     }
 
-    fn contravariance(&self, host: &mut SModelHost, base_accessor: &str, base_meaning: &Symbol, submeaning: &Symbol) {
+    fn contravariance(&self, host: &mut SModelHost, base_accessor: &str, base_meaning: &Symbol, submeaning: &Symbol, smodel_path: &proc_macro2::TokenStream) {
         let base_meaning_name = Ident::new(&base_meaning.name(), Span::call_site());
         let submeaning_name = Ident::new(&submeaning.name(), Span::call_site());
         let base_accessor = base_accessor.replacen("self", "v", 1);
-        let m = proc_macro2::TokenStream::from_str(&self.match_contravariant(&submeaning.asc_meaning_list(), 0, &format!("{base_accessor}.upgrade().unwrap()"), &base_accessor)).unwrap();
+        let m = proc_macro2::TokenStream::from_str(&self.match_contravariant(&submeaning.asc_meaning_list(), 0, &format!("{base_accessor}.upgrade().unwrap()"), &base_accessor, smodel_path)).unwrap();
 
         host.output.extend::<TokenStream>(quote! {
             impl TryFrom<#base_meaning_name> for #submeaning_name {
-                type Error = ::smodel::SModelError;
+                type Error = #smodel_path::SModelError;
                 fn try_from(v: #base_meaning_name) -> Result<Self, Self::Error> {
                     #m
                 }
@@ -101,7 +101,7 @@ impl ProcessingStep3_6 {
     /// 
     /// * `base` is assumed to be a `Rc<#DATA::M>` value.
     /// * `original_base` is assumed to be a `Weak<#DATA::FirstM>` value.
-    fn match_contravariant(&self, asc_meaning_list: &[Symbol], meaning_index: usize, base: &str, original_base: &str) -> String {
+    fn match_contravariant(&self, asc_meaning_list: &[Symbol], meaning_index: usize, base: &str, original_base: &str, smodel_path: &proc_macro2::TokenStream) -> String {
         let (meaning, inherited) = if meaning_index + 1 >= asc_meaning_list.len() {
             (asc_meaning_list[meaning_index].clone(), None)
         } else {
@@ -111,9 +111,10 @@ impl ProcessingStep3_6 {
         let Some(inherited) = inherited else {
             return format!("Ok({})", Symbol::create_layers_over_weak_root(original_base, asc_meaning_list));
         };
-        format!("(if {DATA}::{}::{}(_o) = &{base}.{DATA_VARIANT_FIELD} {{ {} }} else {{ Err(::smodel::SModelError::Contravariant) }})",
+        format!("if let {DATA}::{}::{}(_o) = &{base}.{DATA_VARIANT_FIELD} {{ {} }} else {{ Err({}::SModelError::Contravariant) }}",
             DATA_VARIANT_PREFIX.to_owned() + &inherited.name(),
             meaning.name(),
-            self.match_contravariant(asc_meaning_list, meaning_index + 1, "_o", original_base))
+            self.match_contravariant(asc_meaning_list, meaning_index + 1, "_o", original_base, smodel_path),
+            smodel_path.to_string())
     }
 }

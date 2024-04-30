@@ -50,6 +50,7 @@ const DATA_VARIANT_PREFIX: &'static str = "__variant_";
 const DATA_VARIANT_NO_SUBMEANING: &'static str = "__NoSubmeaning";
 
 struct MeaningTree {
+    smodel_path: proc_macro2::TokenStream,
     arena_type_name: proc_macro2::TokenStream,
     meanings: Vec<Rc<Meaning>>,
 }
@@ -98,16 +99,29 @@ struct MeaningMethod {
 
 impl Parse for MeaningTree {
     fn parse(input: ParseStream) -> Result<Self> {
+        let mut smodel_path: Option<Path> = None;
+        if input.peek(Token![mod]) {
+            input.parse::<Token![mod]>()?;
+            input.parse::<Ident>()?;
+            input.parse::<Token![=]>()?;
+            smodel_path = Some(parse_full_qualified_id(input)?);
+            input.parse::<Token![;]>()?;
+        }
         let arena_type_name = parse_meaning_arena_type_name(input)?.to_token_stream();
         let mut meanings = vec![];
         while !input.is_empty() {
             meanings.push(Rc::new(input.parse::<Meaning>()?));
         }
         Ok(Self {
+            smodel_path: smodel_path.map(|p| p.to_token_stream()).unwrap_or(proc_macro2::TokenStream::from_str("::smodel").unwrap()),
             arena_type_name,
             meanings,
         })
     }
+}
+
+fn parse_full_qualified_id(input: ParseStream) -> Result<Path> {
+    Ok(Path::parse_mod_style(input)?)
 }
 
 impl Parse for Meaning {
@@ -268,7 +282,7 @@ fn parse_meaning_arena_type_name(input: ParseStream) -> Result<Path> {
 #[proc_macro]
 pub fn smodel(input: TokenStream) -> TokenStream {
     let MeaningTree {
-        arena_type_name, meanings
+        smodel_path, arena_type_name, meanings
     } = parse_macro_input!(input as MeaningTree);
 
     let mut host = SModelHost::new();
@@ -304,7 +318,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
     // 1. Output the arena type.
     host.output.extend::<TokenStream>(quote! {
-        type #arena_type_name = ::smodel::Arena<#data_id::#base_meaning_name>;
+        type #arena_type_name = #smodel_path::Arena<#data_id::#base_meaning_name>;
     }.try_into().unwrap());
 
     // 2. Traverse each meaning in a first pass.
@@ -376,7 +390,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         });
 
         // 3.6. Define the structure M
-        ProcessingStep3_6().exec(&mut host, &meaning_node, &meaning, &base_accessor);
+        ProcessingStep3_6().exec(&mut host, &meaning_node, &meaning, &base_accessor, &smodel_path);
 
         // 3.7. Define the constructor
         ProcessingStep3_7().exec(&mut host, meaning_node.constructor.as_ref(), &meaning, &asc_meaning_list, &arena_type_name.to_string());
@@ -394,10 +408,10 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         // * Contribute a `to::<T: TryFrom<M>>()` method.
         // * Contribute an `is::<T>()` method.
         meaning.method_output().borrow_mut().extend(quote! {
-            pub fn to<T: TryFrom<#meaning_name_id>>(&self) -> Result<T, ::smodel::SModelError> {
+            pub fn to<T: TryFrom<#meaning_name_id, Error = #smodel_path::SModelError>>(&self) -> Result<T, #smodel_path::SModelError> {
                 T::try_from(self.clone())
             }
-            pub fn is<T: TryFrom<#meaning_name_id>>(&self) -> bool {
+            pub fn is<T: TryFrom<#meaning_name_id, Error = #smodel_path::SModelError>>(&self) -> bool {
                 T::try_from(self.clone()).is_ok()
             }
         });

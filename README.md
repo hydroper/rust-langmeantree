@@ -24,7 +24,7 @@ smodel! {
 
         pub fn Meaning() {
             super();
-            println!("{}", this.m());
+            println!("{}", self.m());
         }
 
         pub fn m(&self) -> String {
@@ -84,7 +84,7 @@ The constructor is a method whose name matches the meaning's name. The `arena` p
 
 The constructor is translated to a static `new` method.
 
-The constructor contains a local `this` variable whose data type is the instance of that meaning.
+The constructor contains a local `self` variable whose data type is the instance of that meaning.
 
 ## Submeanings
 

@@ -28,10 +28,12 @@ pub enum SModelError {
 
 #[cfg(test)]
 mod test {
+    #[test]
     fn test() {
         use crate::smodel;
 
         smodel! {
+            mod smodel = crate;
             type Arena = MeaningArena;
         
             struct Meaning {
@@ -40,7 +42,7 @@ mod test {
         
                 pub fn Meaning() {
                     super();
-                    println!("{}", this.m());
+                    println!("{}", self.m());
                 }
         
                 pub fn m(&self) -> String {

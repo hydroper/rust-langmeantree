@@ -33,33 +33,33 @@ impl ProcessingStep3_7 {
         // `M::new` output
         let mut m_new_out = TokenStream::new();
 
-        // At `M::new`, let `this` be a complex `M2(M1(__arena.allocate(#DATA::M1 { ... })))`
+        // At `M::new`, let `__cto1` be a complex `M2(M1(__arena.allocate(#DATA::M1 { ... })))`
         // (notice the meaning layers) allocation initializing all meaning variants's fields
         // with their default values.
         let initlayer1 = self.init_data(asc_meaning_list, 0);
         let initlayer2 = proc_macro2::TokenStream::from_str(&Symbol::create_layers_over_weak_root(&format!("arena.allocate({})", initlayer1.to_string()), asc_meaning_list)).unwrap();
         m_new_out.extend::<TokenStream>(quote! {
-            let this = #initlayer2;
+            let __cto1 = #initlayer2;
         }.try_into().unwrap());
 
         // If the meaning inherits another meaning:
         //
-        // * At `M::new`, invoke `InheritedM::#ctor_init_name_id(&this.0, ...super_arguments)`,
+        // * At `M::new`, invoke `InheritedM::#ctor_init_name_id(&__cto1.0, ...super_arguments)`,
         //   passing all `super(...)` arguments.
         if let Some(inherited_m) = meaning.inherits() {
             let inherited_m_name = Ident::new(&inherited_m.name(), Span::call_site());
             let super_arguments = node.map(|node| node.super_arguments.clone()).unwrap_or(Punctuated::new());
             m_new_out.extend::<TokenStream>(quote! {
-                #inherited_m_name::#ctor_init_name_id(&this.0, #super_arguments);
+                #inherited_m_name::#ctor_init_name_id(&__cto1.0, #super_arguments);
             }.try_into().unwrap());
         }
 
-        // * Output a `this.#ctor_init_name_id(...arguments);` call to `M::new`.
-        // * Output a `this` return to `M::new`.
+        // * Output a `__cto1.#ctor_init_name_id(...arguments);` call to `M::new`.
+        // * Output a `__cto1` return to `M::new`.
         let input_args = convert_function_input_to_arguments(&input);
         m_new_out.extend::<TokenStream>(quote! {
-            this.#ctor_init_name_id(#input_args);
-            this
+            __cto1.#ctor_init_name_id(#input_args);
+            __cto1
         }.try_into().unwrap());
 
         // Output the constructor as a static `new` method (`M::new`) with
@@ -82,9 +82,15 @@ impl ProcessingStep3_7 {
         for (name, field) in meaning.fields().borrow().iter() {
             let name_id = Ident::new(name, Span::call_site());
             let fv = field.field_init();
-            fields.extend(quote! {
-                #name_id: #fv,
-            });
+            if field.is_ref() {
+                fields.extend(quote! {
+                    #name_id: ::std::cell::RefCell::new(#fv),
+                });
+            } else {
+                fields.extend(quote! {
+                    #name_id: ::std::cell::Cell::new(#fv),
+                });
+            }
         }
         let data_variant_no_submeaning = proc_macro2::TokenStream::from_str(DATA_VARIANT_NO_SUBMEANING).unwrap();
         let submeaning_enum = proc_macro2::TokenStream::from_str(&format!("{DATA}::{DATA_VARIANT_PREFIX}{meaning_name}")).unwrap();
