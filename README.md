@@ -72,7 +72,7 @@ For mutable hash maps or vectors, it is recommended to use a *shared container* 
 
 Fields are always internal to the enclosing module, therefore there are no attributes; the field definition always starts with the `let` keyword, without a RustDoc comment.
 
-It is recommended for fields to always start with a underscore `_`, and consequently using accesses such as `_x()`, or `set__x(v)`.
+It is recommended for fields to always start with either a underscore `_` or a private prefix such as `m_`, and consequently using accesses such as `_x()` and `set__x(v)`, or `m_x()` and `set_m_x()`, respectively.
 
 Then, you would implement methods that may be overriden by subtypes in a base type, allowing for an *unified* data type that supports methods that operate on more than one variant.
 
