@@ -42,6 +42,8 @@ use by_address::ByAddress;
 /// Data module name.
 const DATA: &'static str = "__data__";
 
+const DATA_PREFIX: &'static str = "__data_";
+
 /// Field name used for holding an enumeration of subtypes.
 const DATA_VARIANT_FIELD: &'static str = "__variant";
 
@@ -303,7 +305,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         data_types[0].name.span().unwrap().error("First data type must inherit no base.").emit();
         return TokenStream::new();
     }
-    let base_smtype_name = Ident::new(&data_types[0].name.to_string(), Span::call_site());
+    let base_smtype_data_name = Ident::new(&(DATA_PREFIX.to_string() + &data_types[0].name.to_string()), Span::call_site());
 
     // 3. Ensure all other types inherit another one.
 
@@ -320,7 +322,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
     // 1. Output the arena type.
     host.output.extend::<TokenStream>(quote! {
-        pub type #arena_type_name = #smodel_path::Arena<#data_id::#base_smtype_name>;
+        pub type #arena_type_name = #smodel_path::Arena<#data_id::#base_smtype_data_name>;
     }.try_into().unwrap());
 
     // 2. Traverse each type in a first pass.
@@ -339,7 +341,6 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         let asc_smtype_list = smtype.asc_smtype_list();
         let mut field_output = proc_macro2::TokenStream::new();
         let smtype_name = smtype.name();
-        let smtype_name_id = Ident::new(&smtype_name, Span::call_site());
 
         // 3.1. Write out the base data accessor
         //
@@ -374,7 +375,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         // 3.4. Contribute an enumeration of subtypes at the `#DATA` module.
         let mut variants: Vec<proc_macro2::TokenStream> = vec![];
         for subtype in smtype.subtypes().iter() {
-            let sn = subtype.name();
+            let sn = DATA_PREFIX.to_owned() + &subtype.name();
             variants.push(proc_macro2::TokenStream::from_str(&format!("{sn}(::std::rc::Rc<{sn}>)")).unwrap());
         }
         let data_variant_no_subtype = Ident::new(DATA_VARIANT_NO_SUBTYPE, Span::call_site());
@@ -385,10 +386,12 @@ pub fn smodel(input: TokenStream) -> TokenStream {
             }
         });
 
+        let smtype_data_id = Ident::new(&format!("{DATA_PREFIX}{}", smtype_name), Span::call_site());
+
         // 3.5. Define the data structure #DATA::M at the #DATA module output,
         // containing all field output.
         host.data_output.extend(quote! {
-            pub struct #smtype_name_id {
+            pub struct #smtype_data_id {
                 #field_output
             }
         });

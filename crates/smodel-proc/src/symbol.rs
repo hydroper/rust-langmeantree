@@ -49,7 +49,7 @@ impl LmtFactory {
         }))))
     }
 
-    pub fn create_method_slot(&self, name: String, defined_in: Symbol, doc_attribute: Option<syn::Attribute>) -> Symbol {
+    pub fn create_method_slot(&self, name: String, defined_in: Symbol, doc_attribute: Vec<syn::Attribute>) -> Symbol {
         Symbol(self.arena.allocate(Symbol1::MethodSlot(Rc::new(MethodSlot1 {
             name,
             defined_in,
@@ -215,14 +215,14 @@ impl Symbol {
         }
     }
 
-    pub fn doc_attribute(&self) -> Option<syn::Attribute> {
+    pub fn doc_attribute(&self) -> Vec<syn::Attribute> {
         match access!(self) {
             Symbol1::MethodSlot(slot) => slot.doc_attribute.borrow().clone(),
             _ => panic!(),
         }
     }
 
-    pub fn set_doc_attribute(&self, attr: Option<syn::Attribute>) {
+    pub fn set_doc_attribute(&self, attr: Vec<syn::Attribute>) {
         match access!(self) {
             Symbol1::MethodSlot(slot) => { slot.doc_attribute.replace(attr); },
             _ => panic!(),
@@ -268,7 +268,7 @@ struct FieldSlot1 {
 struct MethodSlot1 {
     name: String,
     defined_in: Symbol,
-    doc_attribute: RefCell<Option<syn::Attribute>>,
+    doc_attribute: RefCell<Vec<syn::Attribute>>,
     override_logic_mapping: SharedMap<Symbol, Rc<OverrideLogicMapping>>,
 }
 

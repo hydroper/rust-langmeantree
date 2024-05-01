@@ -79,7 +79,7 @@ impl ProcessingStep3_2 {
         };
         format!("(if let {DATA}::{}::{}(o) = &{base}.{DATA_VARIANT_FIELD} {{ {} }} else {{ panic!() }})",
             DATA_VARIANT_PREFIX.to_owned() + &inherited.name(),
-            smtype.name(),
+            DATA_PREFIX.to_owned() + &smtype.name(),
             self.match_field(asc_smtype_list, smtype_index + 1, "o", field_name))
     }
 }

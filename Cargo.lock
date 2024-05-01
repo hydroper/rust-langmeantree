@@ -28,7 +28,7 @@ dependencies = [
 
 [[package]]
 name = "smodel"
-version = "1.0.6"
+version = "1.0.8"
 dependencies = [
  "by_address",
  "smodel-proc",
@@ -36,7 +36,7 @@ dependencies = [
 
 [[package]]
 name = "smodel-proc"
-version = "1.0.6"
+version = "1.0.8"
 dependencies = [
  "by_address",
  "proc-macro2",

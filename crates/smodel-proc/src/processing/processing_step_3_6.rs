@@ -39,10 +39,11 @@ impl ProcessingStep3_6 {
             }.try_into().unwrap());
         } else {
             let data_id = Ident::new(DATA, Span::call_site());
+            let smtype_data_name = Ident::new(&format!("{DATA_PREFIX}{}", smtype.name()), Span::call_site());
             host.output.extend::<TokenStream>(quote! {
                 #(#attributes)*
                 #[derive(Clone)]
-                #visi struct #smtype_name(::std::rc::Weak<#data_id::#smtype_name>);
+                #visi struct #smtype_name(::std::rc::Weak<#data_id::#smtype_data_name>);
 
                 impl PartialEq for #smtype_name {
                     fn eq(&self, other: &Self) -> bool {
@@ -116,7 +117,7 @@ impl ProcessingStep3_6 {
         };
         format!("if let {DATA}::{}::{}(_o) = &{base}.{DATA_VARIANT_FIELD} {{ {} }} else {{ Err({}::SModelError::Contravariant) }}",
             DATA_VARIANT_PREFIX.to_owned() + &inherited.name(),
-            smtype.name(),
+            DATA_PREFIX.to_owned() + &smtype.name(),
             self.match_contravariant(asc_smtype_list, smtype_index + 1, "_o", original_base, smodel_path),
             smodel_path.to_string())
     }

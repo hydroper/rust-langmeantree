@@ -46,17 +46,17 @@ impl ProcessingStep3_8 {
 
         // * Look for the #[doc] attribute.
         // * Look for the #[inheritdoc] attribute.
-        let mut doc_attr: Option<syn::Attribute> = None;
+        let mut doc_attr: Vec<syn::Attribute> = vec![];
         let mut inheritdoc_index: Option<usize> = None;
         let mut i = 0usize;
         for attr in node.attributes.borrow().iter() {
             if let Meta::List(list) = &attr.meta {
                 if list.path.to_token_stream().to_string() == "doc" {
-                    doc_attr = Some(attr.clone());
+                    doc_attr.push(attr.clone());
                 }
             } else if let Meta::NameValue(name_value) = &attr.meta {
                 if name_value.path.to_token_stream().to_string() == "doc" {
-                    doc_attr = Some(attr.clone());
+                    doc_attr.push(attr.clone());
                 }
             } else if let Meta::Path(p) = &attr.meta {
                 if p.to_token_stream().to_string() == "inheritdoc" {
@@ -89,7 +89,7 @@ impl ProcessingStep3_8 {
 
             if let Some(base_method) = smtype.lookup_method_in_base_smtype(&slot.name()) {
                 slot.set_doc_attribute(base_method.doc_attribute());
-                if let Some(attr) = base_method.doc_attribute() {
+                for attr in base_method.doc_attribute() {
                     node.attributes.borrow_mut().push(attr);
                 }
             } else {

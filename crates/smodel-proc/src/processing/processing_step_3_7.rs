@@ -96,7 +96,7 @@ impl ProcessingStep3_7 {
         let subtype_enum = proc_macro2::TokenStream::from_str(&format!("{DATA}::{DATA_VARIANT_PREFIX}{smtype_name}")).unwrap();
         let variant = if smtype_index + 1 < asc_smtype_list.len() {
             let next_m = asc_smtype_list[smtype_index + 1].name();
-            let next_m = Ident::new(&next_m, Span::call_site());
+            let next_m = Ident::new(&(DATA_PREFIX.to_owned() + &next_m), Span::call_site());
             let i = self.init_data(asc_smtype_list, smtype_index + 1);
             quote! { #subtype_enum::#next_m(::std::rc::Rc::new(#i)) }
         } else {
@@ -104,9 +104,9 @@ impl ProcessingStep3_7 {
         };
         let data_variant_field = Ident::new(DATA_VARIANT_FIELD, Span::call_site());
         let data_id = Ident::new(DATA, Span::call_site());
-        let smtype_name_id = Ident::new(&smtype_name, Span::call_site());
+        let smtype_data_name = Ident::new(&format!("{DATA_PREFIX}{}", smtype_name), Span::call_site());
         quote! {
-            #data_id::#smtype_name_id {
+            #data_id::#smtype_data_name {
                 #fields
                 #data_variant_field: #variant
             }
