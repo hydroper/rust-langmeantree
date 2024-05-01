@@ -40,19 +40,23 @@ impl ProcessingStep3_2 {
 
         if slot.is_ref() {
             meaning.method_output().borrow_mut().extend(quote! {
+                #[allow(non_snake_case)]
                 fn #getter_name(&self) -> #field_type {
                     #fv.borrow().clone()
                 }
+                #[allow(non_snake_case)]
                 fn #setter_name(&self, v: #field_type) {
                     #fv.replace(v);
                 }
             });
         } else {
             meaning.method_output().borrow_mut().extend(quote! {
+                #[allow(non_snake_case)]
                 fn #getter_name(&self) -> #field_type {
                     #fv.get()
                 }
 
+                #[allow(non_snake_case)]
                 fn #setter_name(&self, v: #field_type) {
                     #fv.set(v);
                 }
@@ -62,17 +66,16 @@ impl ProcessingStep3_2 {
 
     /// Matches a field. `base` is assumed to be a `Rc<#DATA::M>` value.
     fn match_field(&self, asc_meaning_list: &[Symbol], meaning_index: usize, base: &str, field_name: &str) -> String {
-        let inherited = if asc_meaning_list.len() - meaning_index == 1 {
-            None
+        let (meaning, inherited) = if meaning_index + 1 >= asc_meaning_list.len() {
+            (asc_meaning_list[meaning_index].clone(), None)
         } else {
-            Some(asc_meaning_list[meaning_index].clone())
+            (asc_meaning_list[meaning_index + 1].clone(), Some(asc_meaning_list[meaning_index].clone()))
         };
-        let meaning = asc_meaning_list[meaning_index + if inherited.is_some() { 1 } else { 0 }].clone();
 
-        let Some(inherited) = meaning.inherits() else {
-            return format!("{}.{}", base, field_name);
+        let Some(inherited) = inherited else {
+            return format!("&{}.{}", base, field_name);
         };
-        format!("(if {DATA}::{}::{}(o) = &{base}.{DATA_VARIANT_FIELD} {{ {} }} else {{ panic!() }})",
+        format!("(if let {DATA}::{}::{}(o) = &{base}.{DATA_VARIANT_FIELD} {{ {} }} else {{ panic!() }})",
             DATA_VARIANT_PREFIX.to_owned() + &inherited.name(),
             meaning.name(),
             self.match_field(asc_meaning_list, meaning_index + 1, "o", field_name))

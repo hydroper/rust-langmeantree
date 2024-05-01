@@ -440,7 +440,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
     // 5. Output the `mod #DATA { use super::*; ... }` module with its respective contents
     host.output.extend::<TokenStream>(quote! {
-        #[allow(non_camel_case_types)]
+        #[allow(non_camel_case_types, non_snake_case)]
         mod #data_id {
             use super::*;
 

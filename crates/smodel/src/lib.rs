@@ -41,9 +41,6 @@ mod test {
         
             /// My unified data type.
             struct Symbol {
-                let x: f64 = 0.0;
-                let ref y: String = "".into();
-        
                 pub fn Symbol() {
                     super();
                 }
@@ -55,6 +52,10 @@ mod test {
 
                 pub fn base_example(&self) -> String {
                     "from base".into()
+                }
+
+                pub fn x(&self) -> f64 {
+                    0.0
                 }
             }
         
@@ -84,13 +85,26 @@ mod test {
             }
             
             struct FooBarBar: FooBar {
-                pub fn FooBarBar() {
+                let _x: f64 = 0.0;
+                let ref _y: String = "".into();
+
+                pub fn FooBarBar(x: f64, y: &str) {
                     super();
+                    self.set__x(x);
+                    self.set__y(y.into());
                 }
 
                 #[inheritdoc]
                 pub override fn name(&self) -> String {
                     "FooBarBar".into()
+                }
+
+                pub override fn x(&self) -> f64 {
+                    self._x()
+                }
+
+                pub override fn base_example(&self) -> String {
+                    format!("from {}; {}", self._y(), super.base_example())
                 }
             }
         
@@ -116,6 +130,7 @@ mod test {
         assert_eq!(false, base_symbol.is::<FooBar>());
         assert_eq!(false, base_symbol.is::<FooQux>());
         assert_eq!("from base", base_symbol.base_example());
+        assert_eq!(0.0, base_symbol.x());
 
         let symbol = FooBar::new(&arena);
         let base_symbol: Symbol = symbol.into();
@@ -125,15 +140,17 @@ mod test {
         assert_eq!(false, base_symbol.is::<FooBarBar>());
         assert_eq!(false, base_symbol.is::<FooQux>());
         assert_eq!("from bar; from base", base_symbol.base_example());
+        assert_eq!(0.0, base_symbol.x());
 
-        let symbol = FooBarBar::new(&arena);
+        let symbol = FooBarBar::new(&arena, 10.0, "bar bar");
         let base_symbol: Symbol = symbol.into();
         assert_eq!("FooBarBar", base_symbol.name());
         assert_eq!(true, base_symbol.is::<Foo>());
         assert_eq!(true, base_symbol.is::<FooBar>());
         assert_eq!(true, base_symbol.is::<FooBarBar>());
         assert_eq!(false, base_symbol.is::<FooQux>());
-        assert_eq!("from bar; from base", base_symbol.base_example());
+        assert_eq!("from bar bar; from bar; from base", base_symbol.base_example());
+        assert_eq!(10.0, base_symbol.x());
 
         let symbol = FooQux::new(&arena);
         let base_symbol: Symbol = symbol.into();
@@ -141,5 +158,6 @@ mod test {
         assert_eq!(true, base_symbol.is::<Foo>());
         assert_eq!(false, base_symbol.is::<FooBar>());
         assert_eq!(true, base_symbol.is::<FooQux>());
+        assert_eq!(0.0, base_symbol.x());
     }
 }
