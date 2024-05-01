@@ -64,6 +64,7 @@ mod test {
                     super();
                 }
 
+                #[inheritdoc]
                 pub override fn name(&self) -> String {
                     "Foo".into()
                 }
