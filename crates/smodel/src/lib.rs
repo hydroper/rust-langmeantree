@@ -82,6 +82,17 @@ mod test {
                     format!("from bar; {}", super.base_example())
                 }
             }
+            
+            struct FooBarBar: FooBar {
+                pub fn FooBarBar() {
+                    super();
+                }
+
+                #[inheritdoc]
+                pub override fn name(&self) -> String {
+                    "FooBarBar".into()
+                }
+            }
         
             struct FooQux: Foo {
                 pub fn FooQux() {
@@ -111,6 +122,16 @@ mod test {
         assert_eq!("FooBar", base_symbol.name());
         assert_eq!(true, base_symbol.is::<Foo>());
         assert_eq!(true, base_symbol.is::<FooBar>());
+        assert_eq!(false, base_symbol.is::<FooBarBar>());
+        assert_eq!(false, base_symbol.is::<FooQux>());
+        assert_eq!("from bar; from base", base_symbol.base_example());
+
+        let symbol = FooBarBar::new(&arena);
+        let base_symbol: Symbol = symbol.into();
+        assert_eq!("FooBarBar", base_symbol.name());
+        assert_eq!(true, base_symbol.is::<Foo>());
+        assert_eq!(true, base_symbol.is::<FooBar>());
+        assert_eq!(true, base_symbol.is::<FooBarBar>());
         assert_eq!(false, base_symbol.is::<FooQux>());
         assert_eq!("from bar; from base", base_symbol.base_example());
 
