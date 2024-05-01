@@ -73,7 +73,7 @@ impl ProcessingStep3_2 {
         };
 
         let Some(inherited) = inherited else {
-            return format!("&{}.{}", base, field_name);
+            return format!("(&{}.{})", base, field_name);
         };
         format!("(if let {DATA}::{}::{}(o) = &{base}.{DATA_VARIANT_FIELD} {{ {} }} else {{ panic!() }})",
             DATA_VARIANT_PREFIX.to_owned() + &inherited.name(),
