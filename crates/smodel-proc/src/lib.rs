@@ -320,7 +320,7 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
     // 1. Output the arena type.
     host.output.extend::<TokenStream>(quote! {
-        type #arena_type_name = #smodel_path::Arena<#data_id::#base_smtype_name>;
+        pub type #arena_type_name = #smodel_path::Arena<#data_id::#base_smtype_name>;
     }.try_into().unwrap());
 
     // 2. Traverse each type in a first pass.
