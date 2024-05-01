@@ -4,7 +4,7 @@ SModel (Semantic Modeling) for Rust provides an intuitive way to describe semant
 
 ## Definition order
 
-Definition order is sensitive. Define submeanings after their inherited meanings while using the `struct` keyword.
+Definition order is sensitive. Define subtypes after their inherited data types while using the `struct` keyword.
 
 If you define `struct`s in any order, you may get a compile-time error; luckily, it is easy to identify these cases as structures that were failed to be processed are ignored.
 
@@ -14,13 +14,13 @@ If you define `struct`s in any order, you may get a compile-time error; luckily,
 use smodel::smodel;
 
 smodel! {
-    type Arena = MeaningArena;
+    type Arena = Arena;
 
-    struct Meaning {
+    struct Symbol {
         let x: f64 = 0.0;
         let ref y: String = "".into();
 
-        pub fn Meaning() {
+        pub fn Symbol() {
             super();
             println!("{}", self.m());
         }
@@ -34,8 +34,8 @@ smodel! {
         }
     }
 
-    struct FooMeaning: Meaning {
-        pub fn FooMeaning() {
+    struct Foo: Symbol {
+        pub fn Foo() {
             super();
         }
 
@@ -52,9 +52,9 @@ smodel! {
 }
 
 fn main() {
-    let arena = MeaningArena::new();
-    let meaning = FooMeaning::new(&arena);
-    println!("{}", meaning.m());
+    let arena = Arena::new();
+    let symbol = Foo::new(&arena);
+    println!("{}", symbol.m());
 }
 ```
 
@@ -70,40 +70,40 @@ Fields have a pair of a getter (`fieldname()`) and a setter (`set_fieldname(valu
 
 For mutable hash maps or vectors, it is recommended to use a *shared container* (see below) that is cloned by reference and not by content.
 
-Fields are always private to the meaning, therefore there are no attributes; the field definition always starts with the `let` keyword, without a RustDoc comment.
+Fields are always internal to the enclosing module, therefore there are no attributes; the field definition always starts with the `let` keyword, without a RustDoc comment.
 
 It is recommended for fields to always start with a underscore `_`, and consequently using accesses such as `_x()`, or `set__x(v)`.
 
-Then, you would implement methods that may be overriden by subtype meanings in a base meaning, allowing for an *unified* data type that supports methods that operate on more than one variant.
+Then, you would implement methods that may be overriden by subtypes in a base type, allowing for an *unified* data type that supports methods that operate on more than one variant.
 
 ## Shared containers
 
 This crate provides two container data types that are cloned by reference, `SharedArray` and `SharedMap`, as well as `shared_array!` and `shared_map!` literals.
 
-* `SharedArray` is a reference-counted mutable vector.
-* `SharedMap` is a reference-counted mutable hash map.
+* `SharedArray` is a mutable vector managed by reference counting.
+* `SharedMap` is a mutable hash map managed by reference counting.
 
 Refer to the crate documentation for usage details.
 
 ## Constructor
 
-The constructor is a method whose name matches the meaning's name. The `arena` parameter is implicitly prepended to the formal parameter list.
+The constructor is a method whose name matches the data type's name. The `arena` parameter is implicitly prepended to the formal parameter list.
 
 The constructor is translated to a static `new` method.
 
-The constructor contains a local `self` variable whose data type is the instance of that meaning.
+The constructor contains a local `self` variable whose data type is the instance of the enclosing data type.
 
 ## Subtypes
 
-* `meaning.is::<T>()` tests whether `meaning` is a `T` subtype.
-* `meaning.to::<T>()` converts to the `T` subtype, returning `Ok(m)` or `Err`. It may be a contravariant conversion.
-* `meaning.into()` is a covariant conversion.
+* `symbol.is::<T>()` tests whether `symbol` is a `T` subtype.
+* `symbol.to::<T>()` converts to the `T` subtype, returning `Ok(m)` or `Err`. It may be a contravariant conversion.
+* `symbol.into()` is a covariant conversion.
 
 ## Super expression
 
 The `super.f()` expression is supported by preprocessing the token sequence of a method and transforming it into another Rust code; therefore, it may be used anywhere within an instance method.
 
-`super.f()` does a lookup in the method lists in the descending meanings.
+`super.f()` does a lookup in the method lists in the base data types in descending order.
 
 ## Inheriting documentation
 

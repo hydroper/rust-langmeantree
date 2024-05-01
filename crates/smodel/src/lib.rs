@@ -36,17 +36,19 @@ mod test {
 
         smodel! {
             mod smodel = crate;
-            type Arena = MeaningArena;
+
+            type Arena = Arena;
         
-            struct Meaning {
+            /// My unified data type.
+            struct Symbol {
                 let x: f64 = 0.0;
                 let ref y: String = "".into();
         
-                pub fn Meaning() {
+                pub fn Symbol() {
                     super();
                 }
         
-                /// Empty, FooBar or FooQux
+                /// Empty, Foo, FooBar or FooQux
                 pub fn name(&self) -> String {
                     "".into()
                 }
@@ -56,8 +58,8 @@ mod test {
                 }
             }
         
-            struct FooMeaning: Meaning {
-                pub fn FooMeaning() {
+            struct Foo: Symbol {
+                pub fn Foo() {
                     super();
                 }
 
@@ -66,8 +68,8 @@ mod test {
                 }
             }
         
-            struct FooBarMeaning: FooMeaning {
-                pub fn FooBarMeaning() {
+            struct FooBar: Foo {
+                pub fn FooBar() {
                     super();
                 }
 
@@ -81,8 +83,8 @@ mod test {
                 }
             }
         
-            struct FooQuxMeaning: FooMeaning {
-                pub fn FooQuxMeaning() {
+            struct FooQux: Foo {
+                pub fn FooQux() {
                     super();
                 }
 
@@ -94,21 +96,29 @@ mod test {
         }
 
 
-        let arena = MeaningArena::new();
+        let arena = Arena::new();
 
-        let meaning = FooBarMeaning::new(&arena);
-        let base_meaning: Meaning = meaning.into();
-        assert_eq!("FooBar", base_meaning.name());
-        assert_eq!(true, base_meaning.is::<FooMeaning>());
-        assert_eq!(true, base_meaning.is::<FooBarMeaning>());
-        assert_eq!(false, base_meaning.is::<FooQuxMeaning>());
-        assert_eq!("from bar; from base", base_meaning.base_example());
+        let symbol = Foo::new(&arena);
+        let base_symbol: Symbol = symbol.into();
+        assert_eq!("Foo", base_symbol.name());
+        assert_eq!(true, base_symbol.is::<Foo>());
+        assert_eq!(false, base_symbol.is::<FooBar>());
+        assert_eq!(false, base_symbol.is::<FooQux>());
+        assert_eq!("from base", base_symbol.base_example());
 
-        let meaning = FooQuxMeaning::new(&arena);
-        let base_meaning: Meaning = meaning.into();
-        assert_eq!("FooQux", base_meaning.name());
-        assert_eq!(true, base_meaning.is::<FooMeaning>());
-        assert_eq!(false, base_meaning.is::<FooBarMeaning>());
-        assert_eq!(true, base_meaning.is::<FooQuxMeaning>());
+        let symbol = FooBar::new(&arena);
+        let base_symbol: Symbol = symbol.into();
+        assert_eq!("FooBar", base_symbol.name());
+        assert_eq!(true, base_symbol.is::<Foo>());
+        assert_eq!(true, base_symbol.is::<FooBar>());
+        assert_eq!(false, base_symbol.is::<FooQux>());
+        assert_eq!("from bar; from base", base_symbol.base_example());
+
+        let symbol = FooQux::new(&arena);
+        let base_symbol: Symbol = symbol.into();
+        assert_eq!("FooQux", base_symbol.name());
+        assert_eq!(true, base_symbol.is::<Foo>());
+        assert_eq!(false, base_symbol.is::<FooBar>());
+        assert_eq!(true, base_symbol.is::<FooQux>());
     }
 }
