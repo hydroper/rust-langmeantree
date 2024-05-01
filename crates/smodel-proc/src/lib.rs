@@ -49,7 +49,7 @@ const DATA_VARIANT_FIELD: &'static str = "__variant";
 const DATA_VARIANT_PREFIX: &'static str = "__variant_";
 
 /// Variant name used for indicating that no submeaning is instantiated.
-const DATA_VARIANT_NO_SUBMEANING: &'static str = "__NoSubmeaning";
+const DATA_VARIANT_NO_SUBMEANING: &'static str = "__Nothing";
 
 struct MeaningTree {
     smodel_path: proc_macro2::TokenStream,
