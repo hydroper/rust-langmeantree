@@ -29,11 +29,11 @@ impl LmtFactory {
         }
     }
 
-    pub fn create_meaning_slot(&self, name: String) -> Symbol {
-        Symbol(self.arena.allocate(Symbol1::MeaningSlot(Rc::new(MeaningSlot1 {
+    pub fn create_smtype_slot(&self, name: String) -> Symbol {
+        Symbol(self.arena.allocate(Symbol1::SmTypeSlot(Rc::new(SmTypeSlot1 {
             name,
             inherits: RefCell::new(None),
-            submeanings: shared_array![],
+            subtypes: shared_array![],
             fields: shared_map![],
             methods: shared_map![],
             method_output: Rc::new(RefCell::new(proc_macro2::TokenStream::new())),
@@ -82,8 +82,8 @@ macro_rules! access {
 }
 
 impl Symbol {
-    pub fn is_meaning_slot(&self) -> bool {
-        matches!(access!(self), Symbol1::MeaningSlot(_))
+    pub fn is_smtype_slot(&self) -> bool {
+        matches!(access!(self), Symbol1::SmTypeSlot(_))
     }
 
     pub fn is_field_slot(&self) -> bool {
@@ -96,7 +96,7 @@ impl Symbol {
 
     pub fn name(&self) -> String {
         match access!(self) {
-            Symbol1::MeaningSlot(slot) => slot.name.clone(),
+            Symbol1::SmTypeSlot(slot) => slot.name.clone(),
             Symbol1::FieldSlot(slot) => slot.name.clone(),
             Symbol1::MethodSlot(slot) => slot.name.clone(),
         }
@@ -104,21 +104,21 @@ impl Symbol {
 
     pub fn inherits(&self) -> Option<Symbol> {
         match access!(self) {
-            Symbol1::MeaningSlot(slot) => slot.inherits.borrow().clone(),
+            Symbol1::SmTypeSlot(slot) => slot.inherits.borrow().clone(),
             _ => panic!(),
         }
     }
 
     pub fn set_inherits(&self, value: Option<&Symbol>) {
         match access!(self) {
-            Symbol1::MeaningSlot(slot) => {
+            Symbol1::SmTypeSlot(slot) => {
                 slot.inherits.replace(value.map(|v| v.clone()));
             },
             _ => panic!(),
         }
     }
 
-    pub fn asc_meaning_list(&self) -> Vec<Symbol> {
+    pub fn asc_smtype_list(&self) -> Vec<Symbol> {
         let mut out = vec![self.clone()];
         let mut m = self.inherits();
         while let Some(m1) = m {
@@ -133,10 +133,10 @@ impl Symbol {
     /// Parameters:
     /// 
     /// * `base`: A `Weak<#DATA::FirstM>` value.
-    pub fn create_layers_over_weak_root(base: &str, asc_meaning_list: &[Symbol]) -> String {
+    pub fn create_layers_over_weak_root(base: &str, asc_smtype_list: &[Symbol]) -> String {
         let mut layers = String::new();
         let mut parens = 0usize;
-        for m in asc_meaning_list.iter().rev() {
+        for m in asc_smtype_list.iter().rev() {
             let m_name = m.name();
             layers.push_str(&format!("{m_name}("));
             parens += 1;
@@ -147,7 +147,7 @@ impl Symbol {
         return layers;
     }
 
-    pub fn lookup_method_in_base_meaning(&self, name: &str) -> Option<Symbol> {
+    pub fn lookup_method_in_base_smtype(&self, name: &str) -> Option<Symbol> {
         let mut m = self.clone();
         while let Some(m1) = m.inherits() {
             let mt = m1.methods().get(&name.to_owned());
@@ -159,30 +159,30 @@ impl Symbol {
         None
     }
 
-    pub fn submeanings(&self) -> SharedArray<Symbol> {
+    pub fn subtypes(&self) -> SharedArray<Symbol> {
         match access!(self) {
-            Symbol1::MeaningSlot(slot) => slot.submeanings.clone(),
+            Symbol1::SmTypeSlot(slot) => slot.subtypes.clone(),
             _ => panic!(),
         }
     }
 
     pub fn fields(&self) -> SharedMap<String, Symbol> {
         match access!(self) {
-            Symbol1::MeaningSlot(slot) => slot.fields.clone(),
+            Symbol1::SmTypeSlot(slot) => slot.fields.clone(),
             _ => panic!(),
         }
     }
 
     pub fn methods(&self) -> SharedMap<String, Symbol> {
         match access!(self) {
-            Symbol1::MeaningSlot(slot) => slot.methods.clone(),
+            Symbol1::SmTypeSlot(slot) => slot.methods.clone(),
             _ => panic!(),
         }
     }
 
     pub fn method_output(&self) -> Rc<RefCell<proc_macro2::TokenStream>> {
         match access!(self) {
-            Symbol1::MeaningSlot(slot) => slot.method_output.clone(),
+            Symbol1::SmTypeSlot(slot) => slot.method_output.clone(),
             _ => panic!(),
         }
     }
@@ -244,15 +244,15 @@ impl ToString for Symbol {
 }
 
 enum Symbol1 {
-    MeaningSlot(Rc<MeaningSlot1>),
+    SmTypeSlot(Rc<SmTypeSlot1>),
     FieldSlot(Rc<FieldSlot1>),
     MethodSlot(Rc<MethodSlot1>),
 }
 
-struct MeaningSlot1 {
+struct SmTypeSlot1 {
     name: String,
     inherits: RefCell<Option<Symbol>>,
-    submeanings: SharedArray<Symbol>,
+    subtypes: SharedArray<Symbol>,
     fields: SharedMap<String, Symbol>,
     methods: SharedMap<String, Symbol>,
     method_output: Rc<RefCell<proc_macro2::TokenStream>>,
@@ -295,31 +295,31 @@ impl OverrideLogicMapping {
         self.override_code.replace(code);
     }
 
-    /// Mapping from submeaning slot to override logic.
+    /// Mapping from subtype slot to override logic.
     pub fn override_logic_mapping(&self) -> SharedMap<Symbol, Rc<OverrideLogicMapping>> {
         self.override_logic_mapping.clone()
     }
 }
 
-/// A meaning slot.
+/// A data type slot.
 /// 
 /// # Supported methods
 /// 
-/// * `is_meaning_slot()` — Returns `true`.
+/// * `is_smtype_slot()` — Returns `true`.
 /// * `name()`
 /// * `inherits()`
 /// * `set_inherits()`
-/// * `submeanings()`
+/// * `subtypes()`
 /// * `fields()`
 /// * `methods()`
-/// * `method_output()` — The contents of the `impl` block of the meaning data type.
+/// * `method_output()` — The contents of the `impl` block of the data type.
 #[derive(Clone, Hash, PartialEq, Eq)]
-pub struct MeaningSlot(pub Symbol);
+pub struct SmTypeSlot(pub Symbol);
 
-impl Deref for MeaningSlot {
+impl Deref for SmTypeSlot {
     type Target = Symbol;
     fn deref(&self) -> &Self::Target {
-        assert!(self.0.is_meaning_slot());
+        assert!(self.0.is_smtype_slot());
         &self.0
     }
 }
@@ -353,7 +353,7 @@ impl Deref for FieldSlot {
 /// * `defined_in()`
 /// * `doc_attribute()`
 /// * `set_doc_attribute()`
-/// * `override_logic_mapping()` — Mapping from submeaning slot to override logic.
+/// * `override_logic_mapping()` — Mapping from subtype slot to override logic.
 #[derive(Clone, Hash, PartialEq, Eq)]
 pub struct MethodSlot(pub Symbol);
 

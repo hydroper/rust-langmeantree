@@ -42,44 +42,44 @@ use by_address::ByAddress;
 /// Data module name.
 const DATA: &'static str = "__data__";
 
-/// Field name used for holding an enumeration of submeanings.
+/// Field name used for holding an enumeration of subtypes.
 const DATA_VARIANT_FIELD: &'static str = "__variant";
 
-/// Prefix used for enumerations of submeanings.
+/// Prefix used for enumerations of subtypes.
 const DATA_VARIANT_PREFIX: &'static str = "__variant_";
 
-/// Variant name used for indicating that no submeaning is instantiated.
-const DATA_VARIANT_NO_SUBMEANING: &'static str = "__Nothing";
+/// Variant name used for indicating that no subtype is instantiated.
+const DATA_VARIANT_NO_SUBTYPE: &'static str = "__Nothing";
 
-struct MeaningTree {
+struct SmTypeTree {
     smodel_path: proc_macro2::TokenStream,
     arena_type_name: proc_macro2::TokenStream,
-    meanings: Vec<Rc<Meaning>>,
+    data_types: Vec<Rc<SmType>>,
 }
 
-struct Meaning {
+struct SmType {
     attributes: Vec<Attribute>,
     visibility: Visibility,
     name: Ident,
     inherits: Option<Ident>,
-    fields: Vec<Rc<MeaningField>>,
-    constructor: Option<MeaningConstructor>,
-    methods: Vec<Rc<MeaningMethod>>,
+    fields: Vec<Rc<SmTypeField>>,
+    constructor: Option<SmTypeConstructor>,
+    methods: Vec<Rc<SmTypeMethod>>,
 }
 
-struct MeaningField {
+struct SmTypeField {
     is_ref: bool,
     name: Ident,
     type_annotation: Type,
     default_value: Expr,
 }
 
-enum MeaningMethodOrConstructor {
-    Method(MeaningMethod),
-    Constructor(MeaningConstructor),
+enum SmTypeMethodOrConstructor {
+    Method(SmTypeMethod),
+    Constructor(SmTypeConstructor),
 }
 
-struct MeaningConstructor {
+struct SmTypeConstructor {
     attributes: Vec<Attribute>,
     visibility: Visibility,
     generics: Generics,
@@ -88,7 +88,7 @@ struct MeaningConstructor {
     statements: Vec<Stmt>,
 }
 
-struct MeaningMethod {
+struct SmTypeMethod {
     attributes: RefCell<Vec<Attribute>>,
     visibility: Visibility,
     is_override: bool,
@@ -99,7 +99,7 @@ struct MeaningMethod {
     statements: proc_macro2::TokenStream,
 }
 
-impl Parse for MeaningTree {
+impl Parse for SmTypeTree {
     fn parse(input: ParseStream) -> Result<Self> {
         let mut smodel_path: Option<Path> = None;
         if input.peek(Token![mod]) {
@@ -109,15 +109,15 @@ impl Parse for MeaningTree {
             smodel_path = Some(parse_full_qualified_id(input)?);
             input.parse::<Token![;]>()?;
         }
-        let arena_type_name = parse_meaning_arena_type_name(input)?.to_token_stream();
-        let mut meanings = vec![];
+        let arena_type_name = parse_smtype_arena_type_name(input)?.to_token_stream();
+        let mut data_types = vec![];
         while !input.is_empty() {
-            meanings.push(Rc::new(input.parse::<Meaning>()?));
+            data_types.push(Rc::new(input.parse::<SmType>()?));
         }
         Ok(Self {
             smodel_path: smodel_path.map(|p| p.to_token_stream()).unwrap_or(proc_macro2::TokenStream::from_str("::smodel").unwrap()),
             arena_type_name,
-            meanings,
+            data_types,
         })
     }
 }
@@ -126,7 +126,7 @@ fn parse_full_qualified_id(input: ParseStream) -> Result<Path> {
     Ok(Path::parse_mod_style(input)?)
 }
 
-impl Parse for Meaning {
+impl Parse for SmType {
     fn parse(input: ParseStream) -> Result<Self> {
         let attributes = Attribute::parse_outer(input)?;
         let visibility = input.parse::<Visibility>()?;
@@ -143,21 +143,21 @@ impl Parse for Meaning {
             inherits = Some(input.parse::<Ident>()?);
         }
 
-        let mut fields: Vec<Rc<MeaningField>> = vec![];
-        let mut constructor: Option<MeaningConstructor> = None;
-        let mut methods: Vec<Rc<MeaningMethod>> = vec![];
+        let mut fields: Vec<Rc<SmTypeField>> = vec![];
+        let mut constructor: Option<SmTypeConstructor> = None;
+        let mut methods: Vec<Rc<SmTypeMethod>> = vec![];
         let braced_content;
         let _ = braced!(braced_content in input);
 
         while !braced_content.is_empty() {
             if braced_content.peek(Token![let]) {
-                fields.push(Rc::new(parse_meaning_field(&braced_content)?));
+                fields.push(Rc::new(parse_smtype_field(&braced_content)?));
             } else {
-                match parse_meaning_method(&braced_content, &name_str)? {
-                    MeaningMethodOrConstructor::Constructor(ctor) => {
+                match parse_smtype_method(&braced_content, &name_str)? {
+                    SmTypeMethodOrConstructor::Constructor(ctor) => {
                         constructor = Some(ctor);
                     },
-                    MeaningMethodOrConstructor::Method(m) => {
+                    SmTypeMethodOrConstructor::Method(m) => {
                         methods.push(Rc::new(m));
                     },
                 }
@@ -176,7 +176,7 @@ impl Parse for Meaning {
     }
 }
 
-fn parse_meaning_field(input: ParseStream) -> Result<MeaningField> {
+fn parse_smtype_field(input: ParseStream) -> Result<SmTypeField> {
     input.parse::<Token![let]>()?;
     let is_ref = if input.peek(Token![ref]) {
         input.parse::<Token![ref]>()?;
@@ -191,7 +191,7 @@ fn parse_meaning_field(input: ParseStream) -> Result<MeaningField> {
     let default_value = input.parse::<Expr>()?;
     input.parse::<Token![;]>()?;
 
-    Ok(MeaningField {
+    Ok(SmTypeField {
         is_ref,
         name,
         type_annotation,
@@ -199,7 +199,7 @@ fn parse_meaning_field(input: ParseStream) -> Result<MeaningField> {
     })
 }
 
-fn parse_meaning_method(input: ParseStream, meaning_name: &str) -> Result<MeaningMethodOrConstructor> {
+fn parse_smtype_method(input: ParseStream, smtype_name: &str) -> Result<SmTypeMethodOrConstructor> {
     let attributes = Attribute::parse_outer(input)?;
     let visibility = input.parse::<Visibility>()?;
     let is_override = if input.peek(Token![override]) {
@@ -211,7 +211,7 @@ fn parse_meaning_method(input: ParseStream, meaning_name: &str) -> Result<Meanin
     input.parse::<Token![fn]>()?;
     let mut is_constructor = false;
     let id = input.parse::<Ident>()?;
-    if !is_override && id.to_string() == meaning_name {
+    if !is_override && id.to_string() == smtype_name {
         // id.span().unwrap().error("Identifier must be equals \"constructor\"").emit();
         is_constructor = true;
     }
@@ -235,7 +235,7 @@ fn parse_meaning_method(input: ParseStream, meaning_name: &str) -> Result<Meanin
 
     if !is_constructor {
         let statements = braced_content.parse::<proc_macro2::TokenStream>()?;
-        return Ok(MeaningMethodOrConstructor::Method(MeaningMethod {
+        return Ok(SmTypeMethodOrConstructor::Method(SmTypeMethod {
             attributes: RefCell::new(attributes),
             visibility,
             is_override,
@@ -259,7 +259,7 @@ fn parse_meaning_method(input: ParseStream, meaning_name: &str) -> Result<Meanin
         statements.push(braced_content.parse::<Stmt>()?);
     }
 
-    Ok(MeaningMethodOrConstructor::Constructor(MeaningConstructor {
+    Ok(SmTypeMethodOrConstructor::Constructor(SmTypeConstructor {
         attributes,
         visibility,
         generics,
@@ -269,7 +269,7 @@ fn parse_meaning_method(input: ParseStream, meaning_name: &str) -> Result<Meanin
     }))
 }
 
-fn parse_meaning_arena_type_name(input: ParseStream) -> Result<Path> {
+fn parse_smtype_arena_type_name(input: ParseStream) -> Result<Path> {
     input.parse::<Token![type]>()?;
     let id = input.parse::<Ident>()?;
     if id.to_string() != "Arena" {
@@ -283,33 +283,33 @@ fn parse_meaning_arena_type_name(input: ParseStream) -> Result<Path> {
 
 #[proc_macro]
 pub fn smodel(input: TokenStream) -> TokenStream {
-    let MeaningTree {
-        smodel_path, arena_type_name, meanings
-    } = parse_macro_input!(input as MeaningTree);
+    let SmTypeTree {
+        smodel_path, arena_type_name, data_types
+    } = parse_macro_input!(input as SmTypeTree);
 
     let mut host = SModelHost::new();
 
     // # Validations
 
-    // 1. Ensure there is at least one meaning.
+    // 1. Ensure there is at least one data type.
 
-    if meanings.is_empty() {
-        panic!("There must be at least one meaning.");
+    if data_types.is_empty() {
+        panic!("There must be at least one data type.");
     }
 
-    // 2. Ensure the first meaning inherits no other one.
+    // 2. Ensure the first type inherits no other one.
 
-    if meanings[0].inherits.is_some() {
-        meanings[0].name.span().unwrap().error("First meaning must inherit no any other meaning.").emit();
+    if data_types[0].inherits.is_some() {
+        data_types[0].name.span().unwrap().error("First data type must inherit no base.").emit();
         return TokenStream::new();
     }
-    let base_meaning_name = Ident::new(&meanings[0].name.to_string(), Span::call_site());
+    let base_smtype_name = Ident::new(&data_types[0].name.to_string(), Span::call_site());
 
-    // 3. Ensure all other meanings inherit another one.
+    // 3. Ensure all other types inherit another one.
 
-    for m in meanings[1..].iter() {
+    for m in data_types[1..].iter() {
         if m.inherits.is_none() {
-            m.name.span().unwrap().error("Meaning must inherit another meaning.").emit();
+            m.name.span().unwrap().error("Data type must inherit a base.").emit();
             return TokenStream::new();
         }
     }
@@ -320,63 +320,63 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
     // 1. Output the arena type.
     host.output.extend::<TokenStream>(quote! {
-        type #arena_type_name = #smodel_path::Arena<#data_id::#base_meaning_name>;
+        type #arena_type_name = #smodel_path::Arena<#data_id::#base_smtype_name>;
     }.try_into().unwrap());
 
-    // 2. Traverse each meaning in a first pass.
-    for meaning_node in meanings.iter() {
-        ProcessingStep2().exec(&mut host, meaning_node);
+    // 2. Traverse each type in a first pass.
+    for smtype_node in data_types.iter() {
+        ProcessingStep2().exec(&mut host, smtype_node);
     }
 
-    // 3. Traverse each meaning.
-    for meaning_node in meanings.iter() {
-        let Some(meaning) = host.semantics.get(meaning_node) else {
+    // 3. Traverse each type in a second pass.
+    for smtype_node in data_types.iter() {
+        let Some(smtype) = host.semantics.get(smtype_node) else {
             continue;
         };
 
-        let asc_meaning_list = meaning.asc_meaning_list();
+        let asc_smtype_list = smtype.asc_smtype_list();
         let mut field_output = proc_macro2::TokenStream::new();
-        let meaning_name = meaning.name();
-        let meaning_name_id = Ident::new(&meaning_name, Span::call_site());
+        let smtype_name = smtype.name();
+        let smtype_name_id = Ident::new(&smtype_name, Span::call_site());
 
         // 3.1. Write out the base data accessor
         //
         // A `Weak<#DATA::FirstM>` value.
         //
-        // For example, for the base meaning data type, this
-        // is always "self.0"; for a direct submeaning of the base
+        // For example, for the basemost data type, this
+        // is always "self.0"; for a direct subtype of the basemost
         // data type, this is always "self.0.0".
 
         let mut base_accessor = "self.0".to_owned();
-        let mut m1 = meaning.clone();
+        let mut m1 = smtype.clone();
         while let Some(m2) = m1.inherits() {
             base_accessor.push_str(".0");
             m1 = m2;
         }
 
         // 3.2. Traverse each field.
-        for field in meaning_node.fields.iter() {
-            ProcessingStep3_2().exec(&mut host, &meaning, field, &base_accessor, &asc_meaning_list, &mut field_output);
+        for field in smtype_node.fields.iter() {
+            ProcessingStep3_2().exec(&mut host, &smtype, field, &base_accessor, &asc_smtype_list, &mut field_output);
         }
 
         // 3.3. Contribute a #DATA_VARIANT_FIELD field to #DATA::M
-        // holding the enumeration of submeanings.
-        let submeaning_enum = Ident::new(&(DATA_VARIANT_PREFIX.to_owned() + &meaning_name), Span::call_site());
+        // holding the enumeration of subtypes.
+        let subtype_enum = Ident::new(&(DATA_VARIANT_PREFIX.to_owned() + &smtype_name), Span::call_site());
         let data_variant_field_id = Ident::new(DATA_VARIANT_FIELD, Span::call_site());
         field_output.extend(quote! {
-            pub #data_variant_field_id: #submeaning_enum,
+            pub #data_variant_field_id: #subtype_enum,
         });
 
-        // 3.4. Contribute an enumeration of submeanings at the `#DATA` module.
+        // 3.4. Contribute an enumeration of subtypes at the `#DATA` module.
         let mut variants: Vec<proc_macro2::TokenStream> = vec![];
-        for submeaning in meaning.submeanings().iter() {
-            let sn = submeaning.name();
+        for subtype in smtype.subtypes().iter() {
+            let sn = subtype.name();
             variants.push(proc_macro2::TokenStream::from_str(&format!("{sn}(::std::rc::Rc<{sn}>)")).unwrap());
         }
-        let data_variant_no_submeaning = Ident::new(DATA_VARIANT_NO_SUBMEANING, Span::call_site());
-        variants.push(data_variant_no_submeaning.to_token_stream());
+        let data_variant_no_subtype = Ident::new(DATA_VARIANT_NO_SUBTYPE, Span::call_site());
+        variants.push(data_variant_no_subtype.to_token_stream());
         host.data_output.extend(quote! {
-            pub enum #submeaning_enum {
+            pub enum #subtype_enum {
                 #(#variants),*
             }
         });
@@ -384,53 +384,53 @@ pub fn smodel(input: TokenStream) -> TokenStream {
         // 3.5. Define the data structure #DATA::M at the #DATA module output,
         // containing all field output.
         host.data_output.extend(quote! {
-            pub struct #meaning_name_id {
+            pub struct #smtype_name_id {
                 #field_output
             }
         });
 
         // 3.6. Define the structure M
-        ProcessingStep3_6().exec(&mut host, &meaning_node, &meaning, &base_accessor, &smodel_path);
+        ProcessingStep3_6().exec(&mut host, &smtype_node, &smtype, &base_accessor, &smodel_path);
 
         // 3.7. Define the constructor
-        ProcessingStep3_7().exec(&mut host, meaning_node.constructor.as_ref(), &meaning, &asc_meaning_list, &arena_type_name.to_string());
+        ProcessingStep3_7().exec(&mut host, smtype_node.constructor.as_ref(), &smtype, &asc_smtype_list, &arena_type_name.to_string());
 
         // 3.8. Traverse each method
-        for method in meaning_node.methods.iter() {
-            ProcessingStep3_8().exec(&mut host, method, &meaning);
+        for method in smtype_node.methods.iter() {
+            ProcessingStep3_8().exec(&mut host, method, &smtype);
         }
     }
 
-    // 4. Traverse each meaning.
-    for meaning_node in meanings.iter() {
-        let Some(meaning) = host.semantics.get(meaning_node) else {
+    // 4. Traverse each type in a third pass.
+    for smtype_node in data_types.iter() {
+        let Some(smtype) = host.semantics.get(smtype_node) else {
             continue;
         };
 
-        let meaning_name = meaning.name();
-        let meaning_name_id = Ident::new(&meaning_name, Span::call_site());
+        let smtype_name = smtype.name();
+        let smtype_name_id = Ident::new(&smtype_name, Span::call_site());
 
         // 4.1. Traverse each method
-        for method in meaning_node.methods.iter() {
-            ProcessingStep4_1().exec(&mut host, method, &meaning);
+        for method in smtype_node.methods.iter() {
+            ProcessingStep4_1().exec(&mut host, method, &smtype);
         }
 
         // * Contribute a `to::<T: TryFrom<M>>()` method.
         // * Contribute an `is::<T>()` method.
-        meaning.method_output().borrow_mut().extend(quote! {
-            pub fn to<T: TryFrom<#meaning_name_id, Error = #smodel_path::SModelError>>(&self) -> Result<T, #smodel_path::SModelError> {
+        smtype.method_output().borrow_mut().extend(quote! {
+            pub fn to<T: TryFrom<#smtype_name_id, Error = #smodel_path::SModelError>>(&self) -> Result<T, #smodel_path::SModelError> {
                 T::try_from(self.clone())
             }
-            pub fn is<T: TryFrom<#meaning_name_id, Error = #smodel_path::SModelError>>(&self) -> bool {
+            pub fn is<T: TryFrom<#smtype_name_id, Error = #smodel_path::SModelError>>(&self) -> bool {
                 T::try_from(self.clone()).is_ok()
             }
         });
 
-        let method_output = meaning.method_output().borrow().clone();
+        let method_output = smtype.method_output().borrow().clone();
 
-        // Output the code of all methods to an `impl` block for the meaning data type.
+        // Output the code of all methods to an `impl` block for the data type.
         host.output.extend::<TokenStream>(quote! {
-            impl #meaning_name_id {
+            impl #smtype_name_id {
                 #method_output
             }
         }.try_into().unwrap());

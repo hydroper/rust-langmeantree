@@ -7,7 +7,7 @@ pub struct ProcessingStep3_8();
 
 impl ProcessingStep3_8 {
     // Process a method
-    pub fn exec(&self, host: &mut SModelHost, node: &Rc<MeaningMethod>, meaning: &Symbol) {
+    pub fn exec(&self, host: &mut SModelHost, node: &Rc<SmTypeMethod>, smtype: &Symbol) {
         let input = &node.inputs;
         let type_params = [node.generics.lt_token.to_token_stream(), node.generics.params.to_token_stream(), node.generics.gt_token.to_token_stream()];
         let where_clause = node.generics.where_clause.as_ref().map(|c| c.to_token_stream()).unwrap_or(proc_macro2::TokenStream::new());
@@ -23,7 +23,7 @@ impl ProcessingStep3_8 {
         if Self::begins_with_no_receiver(&node.inputs) {
             let attr = node.attributes.borrow().clone();
             let stmt = &node.statements;
-            meaning.method_output().borrow_mut().extend(quote! {
+            smtype.method_output().borrow_mut().extend(quote! {
                 #(#attr)*
                 #vis fn #name #(#type_params)*(#input) #result_annotation #where_clause {
                     #stmt
@@ -67,23 +67,23 @@ impl ProcessingStep3_8 {
         }
 
         // Create a `MethodSlot` with the appropriate settings.
-        let slot = host.factory.create_method_slot(name.to_string(), meaning.clone(), doc_attr);
+        let slot = host.factory.create_method_slot(name.to_string(), smtype.clone(), doc_attr);
 
         // Map node to slot
         host.semantics.set(&node, Some(slot.clone()));
 
-        // Contribute the method slot to the meaning.
-        meaning.methods().set(slot.name(), slot.clone());
+        // Contribute the method slot to the data type.
+        smtype.methods().set(slot.name(), slot.clone());
 
         // Check if the method has a `#[inheritdoc]` attribute; if it has one:
         //
         // * Remove it
-        // * Lookup method in one of the base meanings
+        // * Lookup method in one of the base data types
         // * Inherit RustDoc comment
         if let Some(i) = inheritdoc_index {
             node.attributes.borrow_mut().remove(i);
 
-            if let Some(base_method) = meaning.lookup_method_in_base_meaning(&slot.name()) {
+            if let Some(base_method) = smtype.lookup_method_in_base_smtype(&slot.name()) {
                 slot.set_doc_attribute(base_method.doc_attribute());
                 if let Some(attr) = base_method.doc_attribute() {
                     node.attributes.borrow_mut().push(attr);
@@ -101,16 +101,16 @@ impl ProcessingStep3_8 {
         let input_args = convert_function_input_to_arguments(&inputs);
 
         // Process super expressions
-        let statements = self.process_super_expression(node.statements.clone(), meaning, &slot);
+        let statements = self.process_super_expression(node.statements.clone(), smtype, &slot);
 
         // If the method is marked as "override"
         //
-        // * Lookup for a method with the same name in one of the base meanings
+        // * Lookup for a method with the same name in one of the base data types
         // * Contribute "overriding" return call code to the respective
-        //   override logic mapping according to meaning inheritance.
+        //   override logic mapping according to smtype inheritance.
         if node.is_override {
-            if let Some(base_method) = meaning.lookup_method_in_base_meaning(&slot.name()) {
-                self.perform_override(&slot.name(), base_method.override_logic_mapping(), &base_method.defined_in(), meaning, &input_args);
+            if let Some(base_method) = smtype.lookup_method_in_base_smtype(&slot.name()) {
+                self.perform_override(&slot.name(), base_method.override_logic_mapping(), &base_method.defined_in(), smtype, &input_args);
             } else {
                 name.span().unwrap().error(format!("No method '{}' in base.", slot.name())).emit();
             }
@@ -138,7 +138,7 @@ impl ProcessingStep3_8 {
             attr.remove(*i);
         }
 
-        meaning.method_output().borrow_mut().extend(quote! {
+        smtype.method_output().borrow_mut().extend(quote! {
             #(#attr)*
             fn #nondispatch_name_id #(#type_params)*(&self, #inputs) #result_annotation #where_clause {
                 #statements
@@ -177,7 +177,7 @@ impl ProcessingStep3_8 {
         }
     }
 
-    fn process_super_expression(&self, input: proc_macro2::TokenStream, meaning: &Symbol, method_slot: &Symbol) -> proc_macro2::TokenStream {
+    fn process_super_expression(&self, input: proc_macro2::TokenStream, smtype: &Symbol, method_slot: &Symbol) -> proc_macro2::TokenStream {
         let mut input = input.into_iter();
         let mut output = proc_macro2::TokenStream::new();
         while let Some(token1) = input.next() {
@@ -235,17 +235,17 @@ impl ProcessingStep3_8 {
 
                     // Found super expression.
 
-                    // Lookup for a method in one of the base meanings.
-                    let Some(base_method) = meaning.lookup_method_in_base_meaning(&id.to_string()) else {
+                    // Lookup for a method in one of the base data types.
+                    let Some(base_method) = smtype.lookup_method_in_base_smtype(&id.to_string()) else {
                         id.span().unwrap().error(format!("No method '{}' in base.", id.to_string())).emit();
                         continue;
                     };
 
-                    // Let base be "self" followed by n = delta_of_descending_list_until_base_meaning
-                    // (where `base_meaning` is the base found method's `.defined_in()` call)
+                    // Let base be "self" followed by n = delta_of_descending_list_until_base_type
+                    // (where `base_type` is the base found method's `.defined_in()` call)
                     // repeats of "".0".
                     let mut base = "self".to_owned();
-                    let mut m = meaning.clone();
+                    let mut m = smtype.clone();
                     while let Some(m1) = m.inherits() {
                         base.push_str(".0");
                         if m1 == base_method.defined_in() {
@@ -258,14 +258,14 @@ impl ProcessingStep3_8 {
                     // Replace super.m(...) by BaseM::#nondispatch_name_id(&#base, ...)
                     let nondispatch_name = format!("{NONDISPATCH_PREFIX}{}", base_method.name());
                     let nondispatch_name_id = Ident::new(&nondispatch_name, Span::call_site());
-                    let base_meaning = Ident::new(&base_method.defined_in().name(), Span::call_site());
-                    let super_args = self.process_super_expression(g.stream(), meaning, method_slot);
+                    let base_smtype = Ident::new(&base_method.defined_in().name(), Span::call_site());
+                    let super_args = self.process_super_expression(g.stream(), smtype, method_slot);
                     output.extend(quote! {
-                        #base_meaning::#nondispatch_name_id(&#base, #super_args)
+                        #base_smtype::#nondispatch_name_id(&#base, #super_args)
                     });
                 },
                 proc_macro2::TokenTree::Group(g) => {
-                    let stream = self.process_super_expression(g.stream(), meaning, method_slot);
+                    let stream = self.process_super_expression(g.stream(), smtype, method_slot);
                     output.extend([proc_macro2::TokenTree::Group(proc_macro2::Group::new(g.delimiter(), stream))]);
                 },
                 _ => {
@@ -276,16 +276,16 @@ impl ProcessingStep3_8 {
         output
     }
 
-    fn perform_override(&self, method_name: &str, mut override_logic_mapping: SharedMap<Symbol, Rc<OverrideLogicMapping>>, base_meaning: &Symbol, target_meaning: &Symbol, input_args: &Punctuated<proc_macro2::TokenStream, Comma>) {
-        let meaning_list = target_meaning.asc_meaning_list();
+    fn perform_override(&self, method_name: &str, mut override_logic_mapping: SharedMap<Symbol, Rc<OverrideLogicMapping>>, base_smtype: &Symbol, target_smtype: &Symbol, input_args: &Punctuated<proc_macro2::TokenStream, Comma>) {
+        let smtype_list = target_smtype.asc_smtype_list();
         let mut i = 0usize;
-        for m in meaning_list.iter() {
-            if m == base_meaning {
+        for m in smtype_list.iter() {
+            if m == base_smtype {
                 break;
             }
             i += 1;
         }
-        for m in meaning_list[(i + 1)..(meaning_list.len() - 1)].iter() {
+        for m in smtype_list[(i + 1)..(smtype_list.len() - 1)].iter() {
             if let Some(old_mapping) = override_logic_mapping.get(m) {
                 override_logic_mapping = old_mapping.override_logic_mapping();
             } else {
@@ -298,7 +298,7 @@ impl ProcessingStep3_8 {
         // Generate layers
         let mut layers = String::new();
         let mut parens = 0usize;
-        for m in meaning_list[(i + 1)..].iter().rev() {
+        for m in smtype_list[(i + 1)..].iter().rev() {
             layers.push_str(&format!("{}(", m.name()));
             parens += 1;
         }
@@ -311,6 +311,6 @@ impl ProcessingStep3_8 {
         new_mapping.set_override_code(Some(quote! {
             return #layers.#method_name_id(#input_args);
         }));
-        override_logic_mapping.set(target_meaning.clone(), new_mapping.clone());
+        override_logic_mapping.set(target_smtype.clone(), new_mapping.clone());
     }
 }

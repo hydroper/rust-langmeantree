@@ -1,15 +1,15 @@
 use crate::*;
 
 pub struct TreeSemantics<T> {
-    meanings: RefCell<HashMap<ByAddress<Rc<Meaning>>, Option<T>>>,
-    methods: RefCell<HashMap<ByAddress<Rc<MeaningMethod>>, Option<T>>>,
-    fields: RefCell<HashMap<ByAddress<Rc<MeaningField>>, Option<T>>>,
+    data_types: RefCell<HashMap<ByAddress<Rc<SmType>>, Option<T>>>,
+    methods: RefCell<HashMap<ByAddress<Rc<SmTypeMethod>>, Option<T>>>,
+    fields: RefCell<HashMap<ByAddress<Rc<SmTypeField>>, Option<T>>>,
 }
 
 impl<T> TreeSemantics<T> {
     pub fn new() -> Self {
         Self {
-            meanings: RefCell::new(HashMap::new()),
+            data_types: RefCell::new(HashMap::new()),
             methods: RefCell::new(HashMap::new()),
             fields: RefCell::new(HashMap::new()),
         }
@@ -23,47 +23,47 @@ pub trait TreeSemanticsAccessor<T, S: Clone> {
     fn _has(&self, node: &Rc<T>) -> bool;
 }
 
-impl<S: Clone> TreeSemanticsAccessor<Meaning, S> for TreeSemantics<S> {
-    fn get(&self, node: &Rc<Meaning>) -> Option<S> {
-        self.meanings.borrow().get(&ByAddress(node.clone())).and_then(|v| v.clone())
+impl<S: Clone> TreeSemanticsAccessor<SmType, S> for TreeSemantics<S> {
+    fn get(&self, node: &Rc<SmType>) -> Option<S> {
+        self.data_types.borrow().get(&ByAddress(node.clone())).and_then(|v| v.clone())
     }
-    fn set(&self, node: &Rc<Meaning>, symbol: Option<S>) {
-        self.meanings.borrow_mut().insert(ByAddress(node.clone()), symbol);
+    fn set(&self, node: &Rc<SmType>, symbol: Option<S>) {
+        self.data_types.borrow_mut().insert(ByAddress(node.clone()), symbol);
     }
-    fn _delete(&self, node: &Rc<Meaning>) -> bool {
-        self.meanings.borrow_mut().remove(&ByAddress(node.clone())).is_some()
+    fn _delete(&self, node: &Rc<SmType>) -> bool {
+        self.data_types.borrow_mut().remove(&ByAddress(node.clone())).is_some()
     }
-    fn _has(&self, node: &Rc<Meaning>) -> bool {
-        self.meanings.borrow().contains_key(&ByAddress(node.clone()))
+    fn _has(&self, node: &Rc<SmType>) -> bool {
+        self.data_types.borrow().contains_key(&ByAddress(node.clone()))
     }
 }
 
-impl<S: Clone> TreeSemanticsAccessor<MeaningField, S> for TreeSemantics<S> {
-    fn get(&self, node: &Rc<MeaningField>) -> Option<S> {
+impl<S: Clone> TreeSemanticsAccessor<SmTypeField, S> for TreeSemantics<S> {
+    fn get(&self, node: &Rc<SmTypeField>) -> Option<S> {
         self.fields.borrow().get(&ByAddress(node.clone())).and_then(|v| v.clone())
     }
-    fn set(&self, node: &Rc<MeaningField>, symbol: Option<S>) {
+    fn set(&self, node: &Rc<SmTypeField>, symbol: Option<S>) {
         self.fields.borrow_mut().insert(ByAddress(node.clone()), symbol);
     }
-    fn _delete(&self, node: &Rc<MeaningField>) -> bool {
+    fn _delete(&self, node: &Rc<SmTypeField>) -> bool {
         self.fields.borrow_mut().remove(&ByAddress(node.clone())).is_some()
     }
-    fn _has(&self, node: &Rc<MeaningField>) -> bool {
+    fn _has(&self, node: &Rc<SmTypeField>) -> bool {
         self.fields.borrow().contains_key(&ByAddress(node.clone()))
     }
 }
 
-impl<S: Clone> TreeSemanticsAccessor<MeaningMethod, S> for TreeSemantics<S> {
-    fn get(&self, node: &Rc<MeaningMethod>) -> Option<S> {
+impl<S: Clone> TreeSemanticsAccessor<SmTypeMethod, S> for TreeSemantics<S> {
+    fn get(&self, node: &Rc<SmTypeMethod>) -> Option<S> {
         self.methods.borrow().get(&ByAddress(node.clone())).and_then(|v| v.clone())
     }
-    fn set(&self, node: &Rc<MeaningMethod>, symbol: Option<S>) {
+    fn set(&self, node: &Rc<SmTypeMethod>, symbol: Option<S>) {
         self.methods.borrow_mut().insert(ByAddress(node.clone()), symbol);
     }
-    fn _delete(&self, node: &Rc<MeaningMethod>) -> bool {
+    fn _delete(&self, node: &Rc<SmTypeMethod>) -> bool {
         self.methods.borrow_mut().remove(&ByAddress(node.clone())).is_some()
     }
-    fn _has(&self, node: &Rc<MeaningMethod>) -> bool {
+    fn _has(&self, node: &Rc<SmTypeMethod>) -> bool {
         self.methods.borrow().contains_key(&ByAddress(node.clone()))
     }
 }

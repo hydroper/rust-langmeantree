@@ -6,7 +6,7 @@ SModel (Semantic Modeling) for Rust provides an intuitive way to describe semant
 
 Definition order is sensitive. Define subtypes after their inherited data types while using the `struct` keyword.
 
-If you define `struct`s in any order, you may get a compile-time error; luckily, it is easy to identify these cases as structures that were failed to be processed are ignored.
+If you define `struct`s in any order, you may get a compile-time error.
 
 ## Example
 

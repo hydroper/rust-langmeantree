@@ -4,7 +4,7 @@ pub struct ProcessingStep4_1();
 
 impl ProcessingStep4_1 {
     // Process a method
-    pub fn exec(&self, host: &mut SModelHost, node: &Rc<MeaningMethod>, meaning: &Symbol) {
+    pub fn exec(&self, host: &mut SModelHost, node: &Rc<SmTypeMethod>, smtype: &Symbol) {
         // Skip if it is not mapped to an instance method slot.
         let Some(slot) = host.semantics.get(node) else {
             return;
@@ -39,7 +39,7 @@ impl ProcessingStep4_1 {
         // to the `impl` output.
         let dynamic_dispatch = self.generate_dynamic_dispatch(slot.override_logic_mapping());
 
-        meaning.method_output().borrow_mut().extend(quote! {
+        smtype.method_output().borrow_mut().extend(quote! {
             #(#attr)*
             #vis fn #name #(#type_params)*(&self, #inputs) #result_annotation #where_clause {
                 #dynamic_dispatch
@@ -51,8 +51,8 @@ impl ProcessingStep4_1 {
     fn generate_dynamic_dispatch(&self, mapping: SharedMap<Symbol, Rc<OverrideLogicMapping>>) -> proc_macro2::TokenStream {
         let mut out = proc_macro2::TokenStream::new();
         let mut first = true;
-        for (submeaning, logic) in mapping.borrow().iter() {
-            let submeaning_name = Ident::new(&submeaning.name(), Span::call_site());
+        for (subtype, logic) in mapping.borrow().iter() {
+            let subtype_name = Ident::new(&subtype.name(), Span::call_site());
             if !first {
                 out.extend(quote! { else });
             }
@@ -65,7 +65,7 @@ impl ProcessingStep4_1 {
                 d1.extend(quote! { else { #code } });
             }
             out.extend(quote! {
-                if self.is::<#submeaning_name>() {
+                if self.is::<#subtype_name>() {
                     #d1
                 }
             });
