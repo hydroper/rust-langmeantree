@@ -3,7 +3,7 @@ use crate::*;
 pub struct ProcessingStep2();
 
 impl ProcessingStep2 {
-    pub fn exec(&self, host: &mut SModelHost, m: &Rc<SmType>) {
+    pub fn exec(&self, host: &mut SModelHost, m: &Rc<SmType>) -> bool {
         // 1. Create a SmTypeSlot.
         let slot = host.factory.create_smtype_slot(m.name.to_string());
 
@@ -17,18 +17,20 @@ impl ProcessingStep2 {
                 inherited_smtype.subtypes().push(slot.clone());
             } else {
                 inherits.span().unwrap().error(format!("Data type '{}' not found.", inherits.to_string())).emit();
-                return;
+                return false;
             }
         }
 
         // 1.4. Contribute type slot to the set of known type slots.
         if host.smtype_slots.contains_key(&slot.name()) {
             m.name.span().unwrap().error(format!("Redefining '{}'", slot.name())).emit();
+            return false;
         } else {
             host.smtype_slots.insert(slot.name(), slot.clone());
         }
 
         // 1.5. Map the data type node to the data type slot.
         host.semantics.set(m, Some(slot));
+        true
     }
 }

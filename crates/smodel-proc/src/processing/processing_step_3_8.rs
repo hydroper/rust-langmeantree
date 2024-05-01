@@ -7,7 +7,7 @@ pub struct ProcessingStep3_8();
 
 impl ProcessingStep3_8 {
     // Process a method
-    pub fn exec(&self, host: &mut SModelHost, node: &Rc<SmTypeMethod>, smtype: &Symbol) {
+    pub fn exec(&self, host: &mut SModelHost, node: &Rc<SmTypeMethod>, smtype: &Symbol) -> bool {
         let input = &node.inputs;
         let type_params = [node.generics.lt_token.to_token_stream(), node.generics.params.to_token_stream(), node.generics.gt_token.to_token_stream()];
         let where_clause = node.generics.where_clause.as_ref().map(|c| c.to_token_stream()).unwrap_or(proc_macro2::TokenStream::new());
@@ -29,13 +29,13 @@ impl ProcessingStep3_8 {
                     #stmt
                 }
             });
-            return;
+            return true;
         }
 
         // Validate receiver
         if !Self::begins_with_instance_receiver(&node.inputs) {
             node.inputs.span().unwrap().error("Instance receiver must be exactly `&self`.").emit();
-            return;
+            return false;
         }
 
         // Remove the receiver
@@ -73,6 +73,10 @@ impl ProcessingStep3_8 {
         host.semantics.set(&node, Some(slot.clone()));
 
         // Contribute the method slot to the data type.
+        if smtype.methods().get(&slot.name()).is_some() {
+            name.span().unwrap().error(format!("Redefining '{}'.", slot.name())).emit();
+            return false;
+        }
         smtype.methods().set(slot.name(), slot.clone());
 
         // Check if the method has a `#[inheritdoc]` attribute; if it has one:
@@ -144,6 +148,8 @@ impl ProcessingStep3_8 {
                 #statements
             }
         });
+        
+        true
     }
 
     fn begins_with_no_receiver(input: &Punctuated<FnArg, Comma>) -> bool {

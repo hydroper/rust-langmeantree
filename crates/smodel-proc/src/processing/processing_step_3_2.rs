@@ -3,14 +3,14 @@ use crate::*;
 pub struct ProcessingStep3_2();
 
 impl ProcessingStep3_2 {
-    pub fn exec(&self, host: &mut SModelHost, smtype: &Symbol, field: &Rc<SmTypeField>, base_accessor: &str, asc_smtype_list: &[Symbol], field_output: &mut proc_macro2::TokenStream) {
+    pub fn exec(&self, host: &mut SModelHost, smtype: &Symbol, field: &Rc<SmTypeField>, base_accessor: &str, asc_smtype_list: &[Symbol], field_output: &mut proc_macro2::TokenStream) -> bool {
         // 1. Create a FieldSlot.
         let slot = host.factory.create_field_slot(field.is_ref, field.name.to_string(), field.type_annotation.clone(), field.default_value.clone());
 
         // 2. Contribute the field slot to the type slot.
         if smtype.fields().has(&slot.name()) {
             field.name.span().unwrap().error(format!("Redefining '{}'", slot.name())).emit();
-            return;
+            return false;
         } else {
             smtype.fields().set(slot.name(), slot.clone());
         }
@@ -31,6 +31,8 @@ impl ProcessingStep3_2 {
 
         // 4. Define accessors
         self.define_accessors(host, smtype, &slot, &field_name, &field_type, base_accessor, asc_smtype_list);
+
+        true
     }
 
     fn define_accessors(&self, _host: &mut SModelHost, smtype: &Symbol, slot: &Symbol, field_name: &str, field_type: &Type, base_accessor: &str, asc_smtype_list: &[Symbol]) {

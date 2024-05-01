@@ -325,7 +325,9 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
     // 2. Traverse each type in a first pass.
     for smtype_node in data_types.iter() {
-        ProcessingStep2().exec(&mut host, smtype_node);
+        if !ProcessingStep2().exec(&mut host, smtype_node) {
+            return TokenStream::new();
+        }
     }
 
     // 3. Traverse each type in a second pass.
@@ -356,7 +358,9 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
         // 3.2. Traverse each field.
         for field in smtype_node.fields.iter() {
-            ProcessingStep3_2().exec(&mut host, &smtype, field, &base_accessor, &asc_smtype_list, &mut field_output);
+            if !ProcessingStep3_2().exec(&mut host, &smtype, field, &base_accessor, &asc_smtype_list, &mut field_output) {
+                return TokenStream::new();
+            }
         }
 
         // 3.3. Contribute a #DATA_VARIANT_FIELD field to #DATA::M
@@ -397,7 +401,9 @@ pub fn smodel(input: TokenStream) -> TokenStream {
 
         // 3.8. Traverse each method
         for method in smtype_node.methods.iter() {
-            ProcessingStep3_8().exec(&mut host, method, &smtype);
+            if !ProcessingStep3_8().exec(&mut host, method, &smtype) {
+                return TokenStream::new();
+            }
         }
     }
 
