@@ -1,6 +1,6 @@
 # SModel
 
-SModel (Semantic Modeling) for Rust provides an intuitive way to describe semantic symbols of a language using dynamic dispatches and hierarchy definitions using an arena that allows for circular references.
+SModel (Semantic Modeling) for Rust provides a friendly way to describe semantic symbols of a language using dynamic dispatches and hierarchy definitions using an arena that allows for circular references.
 
 ## Definition order
 
@@ -10,17 +10,19 @@ If you define `struct`s in any order, you may get a *not found* error that termi
 
 ## Example
 
+The basemost data type is the one that comes first. You may name it according to your tastes. You may usually call it *symbol* or *thingy* (according to a Microsoft Roslyn's engineer, *symbol* ought to be called *thingy*).
+
 ```rust
 use smodel::smodel;
 
 smodel! {
     type Arena = Arena;
 
-    struct Symbol {
+    struct Thingy {
         let x: f64 = 0.0;
         let ref y: String = "".into();
 
-        pub fn Symbol() {
+        pub fn Thingy() {
             super();
             println!("{}", self.m());
         }
@@ -34,7 +36,7 @@ smodel! {
         }
     }
 
-    struct Foo: Symbol {
+    struct Foo: Thingy {
         pub fn Foo() {
             super();
         }
@@ -53,8 +55,8 @@ smodel! {
 
 fn main() {
     let arena = Arena::new();
-    let symbol = Foo::new(&arena);
-    println!("{}", symbol.m());
+    let thingy = Foo::new(&arena);
+    println!("{}", thingy.m());
 }
 ```
 
