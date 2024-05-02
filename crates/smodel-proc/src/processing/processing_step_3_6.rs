@@ -59,6 +59,11 @@ impl ProcessingStep3_6 {
             }.try_into().unwrap());
         }
 
+        // Implement Eq
+        host.output.extend::<TokenStream>(quote! {
+            impl Eq for #smtype_name {}
+        }.try_into().unwrap());
+
         // Output From<M> for InheritedM implementation (covariant conversion)
         let mut base = "v.0.0".to_owned();
         let mut m = smtype.clone();
