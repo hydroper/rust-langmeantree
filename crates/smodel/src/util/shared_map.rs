@@ -24,10 +24,10 @@ use std::rc::Rc;
 /// as in the following snippet:
 /// 
 /// ```ignore
-/// map_object.borrow().iter(|(k, v)| {
+/// for (k, v) in map_object.borrow().iter() {
 ///     // k: &K
 ///     // v: &V
-/// });
+/// }
 /// ```
 #[derive(Clone)]
 pub struct SharedMap<K, V>(Rc<RefCell<HashMap<K, V>>>);
