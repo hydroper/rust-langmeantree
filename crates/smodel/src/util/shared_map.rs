@@ -64,6 +64,10 @@ impl<K, V> SharedMap<K, V> {
         self.0.borrow_mut().remove(key)
     }
 
+    pub fn clear(&mut self) {
+        self.0.borrow_mut().clear();
+    }
+
     pub fn has(&self, key: &K) -> bool where K: Eq + Hash {
         self.0.borrow().contains_key(key)
     }
@@ -82,6 +86,10 @@ impl<K, V> SharedMap<K, V> {
 
     pub fn borrow(&self) -> std::cell::Ref<HashMap<K, V>> {
         self.0.borrow()
+    }
+
+    pub fn borrow_mut(&mut self) -> std::cell::RefMut<HashMap<K, V>> {
+        self.0.borrow_mut()
     }
 }
 

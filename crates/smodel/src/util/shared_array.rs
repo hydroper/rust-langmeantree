@@ -74,6 +74,10 @@ impl<T> SharedArray<T> {
         self.0.borrow_mut().push(value);
     }
 
+    pub fn clear(&mut self) {
+        self.0.borrow_mut().clear();
+    }
+
     pub fn iter(&self) -> SharedArrayIterator<T> where T: Clone {
         SharedArrayIterator {
             array: &self,

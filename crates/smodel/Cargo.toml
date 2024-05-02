@@ -1,6 +1,6 @@
 [package]
 name = "smodel"
-version = "1.0.11"
+version = "1.0.12"
 edition = "2021"
 authors = ["hydroper <matheusdiasdesouzads@gmail.com>"]
 repository = "https://github.com/hydroper/rust.smodel"
