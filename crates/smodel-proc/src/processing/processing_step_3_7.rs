@@ -17,7 +17,7 @@ impl ProcessingStep3_7 {
         let attr = node.map(|node| node.attributes.clone()).unwrap_or(vec![]);
         let vis = node.map(|node| node.visibility.to_token_stream()).unwrap_or(proc_macro2::TokenStream::new());
 
-        let ctor_init_name_id = Ident::new(CTOR_INIT_NAME, Span::call_site());
+        let ctor_init_name_id = Ident::new(CTOR_INIT_NAME, node.map(|node| node.name.span()).unwrap_or(Span::call_site()));
         let arena_type_name_id = Ident::new(arena_type_name, Span::call_site());
 
         // Define the the instance `#ctor_init_name_id` method,

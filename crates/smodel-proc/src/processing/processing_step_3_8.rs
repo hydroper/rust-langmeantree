@@ -99,7 +99,7 @@ impl ProcessingStep3_8 {
 
         // Define `nondispatch_name` as nondispatch prefix plus method name.
         let nondispatch_name = format!("{NONDISPATCH_PREFIX}{}", slot.name());
-        let nondispatch_name_id = Ident::new(&nondispatch_name, Span::call_site());
+        let nondispatch_name_id = Ident::new(&nondispatch_name, name.span());
 
         // Define input argument list
         let input_args = convert_function_input_to_arguments(&inputs);

@@ -4,7 +4,7 @@ pub struct ProcessingStep3_6();
 
 impl ProcessingStep3_6 {
     pub fn exec(&self, host: &mut SModelHost, node: &Rc<SmType>, smtype: &Symbol, base_accessor: &str, smodel_path: &proc_macro2::TokenStream) {
-        let smtype_name = Ident::new(&smtype.name(), Span::call_site());
+        let smtype_name = node.name.clone();
         let attributes = node.attributes.clone();
         let visi = node.visibility.clone();
 
