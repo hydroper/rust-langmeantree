@@ -121,7 +121,6 @@ mod test {
             }
         }
 
-
         let arena = Arena::new();
 
         let symbol = Foo::new(&arena);

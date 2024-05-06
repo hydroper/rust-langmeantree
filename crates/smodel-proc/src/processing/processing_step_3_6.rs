@@ -4,6 +4,7 @@ pub struct ProcessingStep3_6();
 
 impl ProcessingStep3_6 {
     pub fn exec(&self, host: &mut SModelHost, node: &Rc<SmType>, smtype: &Symbol, base_accessor: &str, smodel_path: &proc_macro2::TokenStream) {
+        let smtype_name_debug = format!("{}()", smtype.name());
         let smtype_name = node.name.clone();
         let attributes = node.attributes.clone();
         let visi = node.visibility.clone();
@@ -59,9 +60,15 @@ impl ProcessingStep3_6 {
             }.try_into().unwrap());
         }
 
-        // Implement Eq
+        // Implement Eq and Debug
         host.output.extend::<TokenStream>(quote! {
             impl Eq for #smtype_name {}
+
+            impl ::std::fmt::Debug for #smtype_name {
+                fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                    write!(f, #smtype_name_debug)
+                }
+            }
         }.try_into().unwrap());
 
         // Output From<M> for InheritedM implementation (covariant conversion)
